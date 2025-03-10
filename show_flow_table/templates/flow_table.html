@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow Table Commands</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div id="flow-table">
+        <!-- 流表项会动态插入到这里 -->
+    </div>
+    <script src="/static/js/script.js"></script>
+	<script>
+	    const flowItems = JSON.parse({{ flow_items_json | tojson }});
+	    renderFlowTable(flowItems);
+	</script>
+</body>
+</html>

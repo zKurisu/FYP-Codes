@@ -1,0 +1,65 @@
+/* dpid Box 容器样式 */
+.dpid-box {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+/* dpid 标题样式 */
+.dpid-box h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #333;
+    font-size: 18px;
+}
+
+/* 流表项样式 */
+.flow-item {
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+    font-family: Arial, sans-serif;
+    display: flex;
+    align-items: center;
+}
+
+/* ADD 样式 */
+.flow-item.add {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.flow-item.add::before {
+    content: "+";
+    margin-right: 10px;
+    font-weight: bold;
+    color: #2e7d32;
+}
+
+/* DELETE 样式 */
+.flow-item.delete {
+    background-color: #ffebee;
+    color: #c62828;
+}
+
+.flow-item.delete::before {
+    content: "-";
+    margin-right: 10px;
+    font-weight: bold;
+    color: #c62828;
+}
+
+/* MODIFY 样式 */
+.flow-item.modify {
+    background-color: #fff3e0;
+    color: #e65100;
+}
+
+.flow-item.modify::before {
+    content: "+ -";
+    margin-right: 10px;
+    font-weight: bold;
+    color: #e65100;
+}
