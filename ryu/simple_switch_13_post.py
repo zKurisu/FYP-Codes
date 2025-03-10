@@ -24,13 +24,13 @@ from ryu.lib.packet import ether_types
 
 import httpx
 
-
 class SimpleSwitch13(app_manager.RyuApp):
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
 
     def __init__(self, *args, **kwargs):
         super(SimpleSwitch13, self).__init__(*args, **kwargs)
         self.mac_to_port = {}
+        self.count = 0
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def switch_features_handler(self, ev):
@@ -94,10 +94,12 @@ class SimpleSwitch13(app_manager.RyuApp):
         dpid = format(datapath.id, "d").zfill(16)
         self.mac_to_port.setdefault(dpid, {})
 
-        self.logger.info("packet in %s %s %s %s", dpid, src, dst, in_port)
+        # self.logger.info("packet in %s %s %s %s", dpid, src, dst, in_port)
 
         # learn a mac address to avoid FLOOD next time.
         self.mac_to_port[dpid][src] = in_port
+        print_mac_to_port(self.mac_to_port)
+        # self.logger.info(self.mac_to_port)
 
         if dst in self.mac_to_port[dpid]:
             out_port = self.mac_to_port[dpid][dst]
@@ -161,5 +163,18 @@ def print_flow_mod(mod, dpid):
                 print("Flow data successfully sent to FastAPI.")
             else:
                 print(f"Failed to send flow data. Status code: {response.status_code}")
+    except Exception as e:
+        print(f"Error sending POST request: {e}")
+
+def print_mac_to_port(mac_to_port):
+    # 发送 POST 请求
+    fastapi_url = "http://127.0.0.1:8000/process_mac_to_port"  # FastAPI 程序的 URL
+    try:
+        with httpx.Client() as client:
+            response = client.post(fastapi_url, json=mac_to_port)
+            if response.status_code == 200:
+                print("Mac to port table successfully sent to FastAPI.")
+            else:
+                print(f"Failed to send mac to port table. Status code: {response.status_code}")
     except Exception as e:
         print(f"Error sending POST request: {e}")

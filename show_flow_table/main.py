@@ -1,9 +1,16 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Body
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
+from typing import Dict
 import json
+
+# 定义内层字典的类型
+InnerDict = Dict[str, int]
+
+# 定义外层字典的类型
+OuterDict = Dict[str, InnerDict]
 
 class FlowData(BaseModel):
     datapath_id: str
@@ -49,7 +56,23 @@ async def flow_table(request: Request):
         {"request": request, "flow_items_json": flow_items_json}
     )
 
-# 启动 FastAPI 应用
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+
+app.state.global_mac_to_port = None
+@app.get("/api/mac_to_port-items")
+async def get_mac_to_port_items():
+    return app.state.global_mac_to_port
+
+@app.post("/process_mac_to_port")
+async def process_mac_to_port(mac_to_port: OuterDict = Body(...)):
+    app.state.global_mac_to_port = mac_to_port
+    return {"message": "mac to port table received and processed."}
+
+@app.get("/mac_to_port-table", response_class=HTMLResponse)
+async def mac_to_port_table(request: Request):
+    mac_to_port_items_json = json.dumps(app.state.global_mac_to_port)
+
+    # 渲染 HTML 模板并返回
+    return templates.TemplateResponse(
+        "mac_to_port_table.html",
+        {"request": request, "mac_to_port_items_json": mac_to_port_items_json}
+    )
