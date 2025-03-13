@@ -3,8 +3,10 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
-from typing import Dict, List
+from typing import Dict, List, Tuple
+from mcds.find_MCDS import find_mcds
 import json
+
 
 # 定义内层字典的类型
 InnerDict = Dict[str, int]
@@ -27,10 +29,10 @@ class FlowData(BaseModel):
 app = FastAPI()
 
 # 挂载静态文件目录
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory="rest/static"), name="static")
 
 # 初始化模板引擎
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="rest/templates")
 
 # 示例数据
 flow_items = []
@@ -97,3 +99,16 @@ def show_apInfo(request: Request):
         "apInfo_table.html",
         {"request": request, "apInfo_json": apInfo_json}
     )
+
+class TopoData(BaseModel):
+    positions: Dict[str, Tuple[float, float]]
+    signal_range: float
+
+@app.post("/find_center")
+async def process_positions(request: TopoData):
+    positions = request.positions
+    signal_range = request.signal_range
+
+    mcds, adjs = find_mcds(positions, signal_range)
+
+    return {"status": "Positions processed successfully", "center_dpids": mcds, "adjacency": adjs}

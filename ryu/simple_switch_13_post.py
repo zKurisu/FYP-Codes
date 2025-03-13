@@ -42,6 +42,9 @@ class SimpleSwitch13(app_manager.RyuApp):
         parser = datapath.ofproto_parser
 
         self.switches.append(datapath)
+        req = parser.OFPPortDescStatsRequest(datapath, 0)
+        datapath.send_msg(req)
+
         # install table-miss flow entry
         #
         # We specify NO BUFFER to max_len of the output action due to
@@ -58,9 +61,6 @@ class SimpleSwitch13(app_manager.RyuApp):
     def add_flow(self, datapath, priority, match, actions, buffer_id=None):
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
-
-        req = parser.OFPPortDescStatsRequest(datapath, 0)
-        datapath.send_msg(req)
 
         inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS,
                                              actions)]
