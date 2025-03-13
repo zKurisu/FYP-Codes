@@ -11,6 +11,21 @@ import requests
 import json
 import time
 
+def next_mac(type, index):
+    """ All MAC for AP or Host """
+    if type == "host":
+        prefix = 0x00
+    else:
+        prefix = 0x02
+    return '%02x:%02x:%02x:%02x:%02x:%02x' % (
+        prefix,
+        (index >> 32) & 0xff,
+        (index >> 24) & 0xff,
+        (index >> 16) & 0xff,
+        (index >> 8) & 0xff,
+        index & 0xff,
+    )
+
 class MyNet():
     def __init__(self, ap_number=10, signal_range=31.484254489723796):
         self.signal_range = signal_range
@@ -57,9 +72,12 @@ class MyNet():
             position_y = ap_position[1]
             position_z = 0
             position = f"{position_x},{position_y},{position_z}"
-            ap = self.net.addAccessPoint(ap_name, dpid=dpid_str, wlans=3, position=position)
+            ap_mac = next_mac("ap", ap_count+1)
+
+            ap = self.net.addAccessPoint(ap_name, dpid=dpid_str, wlans=3, position=position, mac=ap_mac)
             self.aps[dpid_str] = ap
 
+            ap_mac = next_mac("host", ap_count+1)
             host_count = ap_count
             host_name = "h%d" % host_count
             host = self.net.addHost(host_name)
@@ -94,7 +112,6 @@ class MyNet():
             info(f"Add center link: {center_intf}\n")
             self.net.addLink(self.hosts[dpid], center_ap)
             self.net.addLink(center_ap, intf=center_intf, cls=mesh, ssid="mesh-center", channel=5)
-
 
     def run(self):
         info("Get init center dpids.......\n")

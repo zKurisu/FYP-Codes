@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
-from typing import Dict
+from typing import Dict, List
 import json
 
 # 定义内层字典的类型
@@ -75,4 +75,25 @@ async def mac_to_port_table(request: Request):
     return templates.TemplateResponse(
         "mac_to_port_table.html",
         {"request": request, "mac_to_port_items_json": mac_to_port_items_json}
+    )
+
+class IntfsDict(BaseModel):
+    name: str
+    port: int
+    mac: str
+APInfo = Dict[str, List[IntfsDict]]
+
+@app.post("/process_apInfo")
+def process_apInfo(apInfo: APInfo):
+    app.state.apInfo = apInfo
+    return {"msg": f"FastAPI receive APInfo with {len(apInfo.keys())} ap"}
+
+@app.get("/apInfo-table", response_class=HTMLResponse)
+def show_apInfo(request: Request):
+    # 将 Pydantic 模型对象转换为字典
+    apInfo_dict = {k: [v.dict() for v in lst] for k, lst in app.state.apInfo.items()}
+    apInfo_json = json.dumps(apInfo_dict)
+    return templates.TemplateResponse(
+        "apInfo_table.html",
+        {"request": request, "apInfo_json": apInfo_json}
     )

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APInfo Table</title>
+    <link rel="stylesheet" href="/static/css/apInfo-table-styles.css">
+</head>
+<body>
+    <h1>APInfo tables</h1>
+    <div id="tables-container">
+    </div>
+    <script src="/static/js/apInfo-table.js"></script>
+    <script>
+        const apInfo = JSON.parse({{ apInfo_json | tojson }});
+        renderAPInfoTable(apInfo);
+    </script>
+</body>
+</html>

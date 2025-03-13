@@ -8,16 +8,21 @@ from mn_wifi.cli import CLI
 from mn_wifi.link import wmediumd, mesh, adhoc
 from mn_wifi.wmediumdConnector import interference
 
-def next_mac(index):
-    """ All MAC """
+def next_mac(type, index):
+    """ All MAC for AP or Host """
+    if type == "host":
+        prefix = 0x00
+    else:
+        prefix = 0x02
     return '%02x:%02x:%02x:%02x:%02x:%02x' % (
-        (index >> 40) & 0xff,
+        prefix,
         (index >> 32) & 0xff,
         (index >> 24) & 0xff,
         (index >> 16) & 0xff,
         (index >> 8) & 0xff,
         index & 0xff,
     )
+
 
 def add_nodes_batch(net, number):
     """ A Node is [AP + Host] """
@@ -30,10 +35,11 @@ def add_nodes_batch(net, number):
     hosts = []
 
     for i in range(1, number+1):
-        mac = next_mac(i)
-        h = net.addHost('h%d' % i, mac=mac)
-        info(f"*** Creating Host with MAC {mac} \n")
-        ap = net.addAccessPoint('ap%d' % i, wlans=3, ssid='ssid%d' % i, **opt_params)
+        host_mac = next_mac("host", i)
+        ap_mac = next_mac("ap", i)
+        h = net.addHost('h%d' % i, mac=host_mac)
+        info(f"*** Creating Host with MAC {host_mac} \n")
+        ap = net.addAccessPoint('ap%d' % i, wlans=3, ssid='ssid%d' % i, mac=ap_mac, **opt_params)
 
         aps.append(ap)
         hosts.append(h)

@@ -7,8 +7,12 @@ from mn_wifi.link import wmediumd, mesh
 from mn_wifi.wmediumdConnector import interference
 from mn_wifi.cli import CLI
 
+from mininet.node import RemoteController
 from mininet.log import info, setLogLevel
 import sys
+import requests
+import json
+
 
 def mytopo(args):
     net = Mininet_wifi(link=wmediumd, wmediumd_mode=interference)
@@ -19,10 +23,10 @@ def mytopo(args):
     h4 = net.addHost("h4", mac="00:00:00:00:00:22")
     h5 = net.addHost("h5", mac="00:00:00:00:00:31")
     h6 = net.addHost("h6", mac="00:00:00:00:00:32")
-    ap1 = net.addAccessPoint("ap1", wlans=2, ssid="ap1", position="20,20,0")
-    ap2 = net.addAccessPoint("ap2", wlans=2, ssid="ap2", position="52,20,0")
-    ap3 = net.addAccessPoint("ap3", wlans=2, ssid="ap3", position="100,20,0")
-    c0 = net.addController("c0")
+    ap1 = net.addAccessPoint("ap1", wlans=2, ssid="ap1", position="20,20,0", mac="02:00:00:00:00:01")
+    ap2 = net.addAccessPoint("ap2", wlans=2, ssid="ap2", position="52,20,0", mac="02:00:00:00:00:02")
+    ap3 = net.addAccessPoint("ap3", wlans=2, ssid="ap3", position="100,20,0", mac="02:00:00:00:00:03")
+    c0 = net.addController("c0", controller=RemoteController, ip="127.0.0.1", port=6654)
 
     net.setPropagationModel(model="logDistance", exp=5)
 
@@ -45,10 +49,39 @@ def mytopo(args):
     ap1.start([c0])
     ap2.start([c0])
     ap3.start([c0])
+    send_apInfo([ap1, ap2, ap3])
 
     CLI(net)
 
     net.stop()
+
+def send_apInfo(aps):
+    apInfo = {}
+    for ap in aps:
+        intfInfo = []
+        ports = ap.ports
+
+        # 遍历字典，获取接口名与端口号的对应关系
+        for intf, port in ports.items():
+            if port != 0:
+                print(f"Interface: {intf.name}, Port: {port}")
+                intfInfo.append({
+                "name": intf.name,
+                "port": port,
+                "mac": ap.MAC(intf.name)
+                })
+        apInfo[ap.name] = intfInfo
+
+        try:
+            url = "http://127.0.0.1:8000/process_apInfo"
+            json_data = json.dumps(apInfo)
+            response = requests.post(url, json_data)
+            response.raise_for_status()
+            msg = response.json()["msg"]
+            info(msg)
+        except requests.exceptions.RequestException as e:
+            info("Failed to send apInfo for FastAPI")
+
 
 if __name__ == '__main__':
     setLogLevel("info")

@@ -91,6 +91,8 @@ class SimpleSwitch13(app_manager.RyuApp):
         dst = eth.dst
         src = eth.src
 
+        self.logger.info("PacketIn: src=%s, dst=%s, ethertype=0x%04x", eth.src, eth.dst, eth.ethertype)
+
         dpid = format(datapath.id, "d").zfill(16)
         self.mac_to_port.setdefault(dpid, {})
 
