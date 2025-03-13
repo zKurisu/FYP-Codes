@@ -147,6 +147,13 @@ class SimpleSwitch13(app_manager.RyuApp):
             else:
                 self.logger.info(f"{portInfo.name} is still up.")
         
+        for dpid in self.mac_to_port.keys():
+            for mac in self.mac_to_port[dpid].keys():
+                if mac == msg.desc.hw_addr:
+                    try:
+                        del self.mac_to_port[dpid][mac]
+                    except KeyError:
+                        print("Error when del mac to port table key, key does not exist")
 
 def print_flow_mod(mod, dpid):
     ofproto = mod.datapath.ofproto
