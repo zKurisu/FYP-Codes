@@ -91,7 +91,7 @@ class SimpleSwitch13(app_manager.RyuApp):
         dst = eth.dst
         src = eth.src
 
-        self.logger.info("PacketIn: src=%s, dst=%s, ethertype=0x%04x", eth.src, eth.dst, eth.ethertype)
+        # self.logger.info("PacketIn: src=%s, dst=%s, ethertype=0x%04x", eth.src, eth.dst, eth.ethertype)
 
         dpid = format(datapath.id, "d").zfill(16)
         self.mac_to_port.setdefault(dpid, {})
@@ -127,6 +127,26 @@ class SimpleSwitch13(app_manager.RyuApp):
         out = parser.OFPPacketOut(datapath=datapath, buffer_id=msg.buffer_id,
                                   in_port=in_port, actions=actions, data=data)
         datapath.send_msg(out)
+    
+    @set_ev_cls(ofp_event.EventOFPPortStatus, MAIN_DISPATCHER)
+    def _port_status_handler(self, ev):
+        msg = ev.msg
+        datapath = msg.datapath
+        ofp = datapath.ofproto
+        portInfo = msg.desc
+
+        self.logger.info(f"Detected {portInfo.name} status change.")
+        if msg.reason == ofp.OFPPR_ADD:
+            self.logger.info(f"{portInfo.name} is new added.")
+        elif msg.reason == ofp.OFPPR_DELETE:
+            self.logger.info(f"{portInfo.name} is deleted.")
+        elif msg.reason == ofp.OFPPR_MODIFY:
+            self.logger.info(f"{portInfo.name} is modified.")
+            if portInfo.config == ofp.OFPPC_PORT_DOWN:
+                self.logger.info(f"{portInfo.name} is down by administrator.")
+            else:
+                self.logger.info(f"{portInfo.name} is still up.")
+        
 
 def print_flow_mod(mod, dpid):
     ofproto = mod.datapath.ofproto
@@ -162,7 +182,8 @@ def print_flow_mod(mod, dpid):
         with httpx.Client() as client:
             response = client.post(fastapi_url, json=flow_data)
             if response.status_code == 200:
-                print("Flow data successfully sent to FastAPI.")
+                pass
+                # print("Flow data successfully sent to FastAPI.")
             else:
                 print(f"Failed to send flow data. Status code: {response.status_code}")
     except Exception as e:
@@ -175,7 +196,8 @@ def print_mac_to_port(mac_to_port):
         with httpx.Client() as client:
             response = client.post(fastapi_url, json=mac_to_port)
             if response.status_code == 200:
-                print("Mac to port table successfully sent to FastAPI.")
+                pass
+                # print("Mac to port table successfully sent to FastAPI.")
             else:
                 print(f"Failed to send mac to port table. Status code: {response.status_code}")
     except Exception as e:
