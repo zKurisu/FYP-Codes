@@ -23,6 +23,7 @@ from ryu.lib.packet import ethernet
 from ryu.lib.packet import ether_types
 
 import httpx
+import re
 
 class SimpleSwitch13(app_manager.RyuApp):
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
@@ -30,6 +31,8 @@ class SimpleSwitch13(app_manager.RyuApp):
     def __init__(self, *args, **kwargs):
         super(SimpleSwitch13, self).__init__(*args, **kwargs)
         self.mac_to_port = {}
+        self.switch_hosts = {}
+        self.switches = []
         self.count = 0
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
@@ -38,6 +41,7 @@ class SimpleSwitch13(app_manager.RyuApp):
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
 
+        self.switches.append(datapath)
         # install table-miss flow entry
         #
         # We specify NO BUFFER to max_len of the output action due to
@@ -55,6 +59,9 @@ class SimpleSwitch13(app_manager.RyuApp):
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
 
+        req = parser.OFPPortDescStatsRequest(datapath, 0)
+        datapath.send_msg(req)
+
         inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS,
                                              actions)]
         if buffer_id:
@@ -67,7 +74,19 @@ class SimpleSwitch13(app_manager.RyuApp):
         dpid = format(datapath.id, "d").zfill(16)
         print_flow_mod(mod, dpid)
         datapath.send_msg(mod)
-
+    
+    @set_ev_cls(ofp_event.EventOFPPortDescStatsReply, MAIN_DISPATCHER)
+    def port_desc_stats_reply_handler(self, ev):
+        datapath = ev.msg.datapath
+        dpid = format(datapath.id, "d").zfill(16)
+        self.switch_hosts.setdefault(dpid, {})
+        
+        for p in ev.msg.body:
+            port_name = p.name.decode('utf-8')
+            if re.search(r"eth" , port_name):
+                self.switch_hosts[dpid].setdefault(p.port_no, "")
+                self.logger.info("Port No: %d, Name: %s, HW Addr: %s",
+                                p.port_no, p.name, p.hw_addr)
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def _packet_in_handler(self, ev):
@@ -103,6 +122,10 @@ class SimpleSwitch13(app_manager.RyuApp):
         print_mac_to_port(self.mac_to_port)
         # self.logger.info(self.mac_to_port)
 
+        if in_port in self.switch_hosts[dpid].keys():
+            self.switch_hosts[dpid][in_port] = src
+            self.logger.info(f"{dpid} connect host: {src} on port {in_port}")
+
         if dst in self.mac_to_port[dpid]:
             out_port = self.mac_to_port[dpid][dst]
         else:
@@ -133,7 +156,9 @@ class SimpleSwitch13(app_manager.RyuApp):
         msg = ev.msg
         datapath = msg.datapath
         ofp = datapath.ofproto
+        parser = datapath.ofproto_parser
         portInfo = msg.desc
+        target_dpid = format(datapath.id, "d").zfill(16)
 
         self.logger.info(f"Detected {portInfo.name} status change.")
         if msg.reason == ofp.OFPPR_ADD:
@@ -144,16 +169,41 @@ class SimpleSwitch13(app_manager.RyuApp):
             self.logger.info(f"{portInfo.name} is modified.")
             if portInfo.config == ofp.OFPPC_PORT_DOWN:
                 self.logger.info(f"{portInfo.name} is down by administrator.")
+                target_hosts = self.switch_hosts[target_dpid].values()
+
+                for hw_addr in target_hosts:
+                    for switch in self.switches:
+                        match = parser.OFPMatch(eth_dst=hw_addr)
+                        self._delete_flows(switch, match)
+
+                        match = parser.OFPMatch(eth_src=hw_addr)
+                        self._delete_flows(switch, match)
+
+                self.mac_to_port = {}
             else:
                 self.logger.info(f"{portInfo.name} is still up.")
         
-        for dpid in self.mac_to_port.keys():
-            for mac in self.mac_to_port[dpid].keys():
-                if mac == msg.desc.hw_addr:
-                    try:
-                        del self.mac_to_port[dpid][mac]
-                    except KeyError:
-                        print("Error when del mac to port table key, key does not exist")
+    
+    def _delete_flows(self, datapath, match):
+        ofproto = datapath.ofproto
+        parser = datapath.ofproto_parser
+        dpid = format(datapath.id, "d").zfill(16)
+
+        # 构建 OFPFlowMod 消息，删除匹配的流表项
+        flow_mod = parser.OFPFlowMod(
+            datapath=datapath,
+            command=ofproto.OFPFC_DELETE,
+            match=match,
+            out_port=ofproto.OFPP_ANY,
+            out_group=ofproto.OFPG_ANY,
+            table_id=ofproto.OFPTT_ALL,
+        )
+
+        # 发送消息
+        print_flow_mod(flow_mod, dpid)
+        datapath.send_msg(flow_mod)
+        self.logger.info(f"Deleted flows with match: {match}")
+
 
 def print_flow_mod(mod, dpid):
     ofproto = mod.datapath.ofproto
