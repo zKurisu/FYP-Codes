@@ -1,3 +1,6 @@
+pre:
+	sudo systemctl stop NetworkManager
+
 staticM:
 	sudo PYTHONPATH=. python multi-center/static-multi-center.py
 
