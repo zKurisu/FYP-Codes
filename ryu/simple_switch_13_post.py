@@ -24,6 +24,8 @@ from ryu.lib.packet import ether_types
 
 import httpx
 import re
+from mygrpc.python.apcontrol.apcontrol_client import run as rpcClientRun
+
 
 class SimpleSwitch13(app_manager.RyuApp):
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
@@ -71,8 +73,9 @@ class SimpleSwitch13(app_manager.RyuApp):
         else:
             mod = parser.OFPFlowMod(datapath=datapath, priority=priority,
                                     match=match, instructions=inst)
-        dpid = format(datapath.id, "d").zfill(16)
-        print_flow_mod(mod, dpid)
+        
+        hex_dpid = format(datapath.id, "x")
+        print_flow_mod(mod, hex_dpid)
         datapath.send_msg(mod)
     
     @set_ev_cls(ofp_event.EventOFPPortDescStatsReply, MAIN_DISPATCHER)
@@ -171,23 +174,27 @@ class SimpleSwitch13(app_manager.RyuApp):
                 self.logger.info(f"{portInfo.name} is down by administrator.")
                 target_hosts = self.switch_hosts[target_dpid].values()
 
-                for hw_addr in target_hosts:
-                    for switch in self.switches:
-                        match = parser.OFPMatch(eth_dst=hw_addr)
-                        self._delete_flows(switch, match)
+                if len(target_hosts) > 0:
+                    for hw_addr in target_hosts:
+                        for switch in self.switches:
+                            match = parser.OFPMatch(eth_dst=hw_addr)
+                            self._delete_flows(switch, match)
 
-                        match = parser.OFPMatch(eth_src=hw_addr)
-                        self._delete_flows(switch, match)
+                            match = parser.OFPMatch(eth_src=hw_addr)
+                            self._delete_flows(switch, match)
 
-                self.mac_to_port = {}
+                    self.mac_to_port = {}
             else:
-                self.logger.info(f"{portInfo.name} is still up.")
+                dpid = format(datapath.id, "x")
+                self.logger.info(f"{portInfo.name} is up.")
+                self.logger.info(f"Call RPC to Mininet for mesh connection.")
+                self.logger.info(f"{dpid}: {portInfo.name}")
         
     
     def _delete_flows(self, datapath, match):
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
-        dpid = format(datapath.id, "d").zfill(16)
+        hex_dpid = format(datapath.id, "x")
 
         # 构建 OFPFlowMod 消息，删除匹配的流表项
         flow_mod = parser.OFPFlowMod(
@@ -200,7 +207,7 @@ class SimpleSwitch13(app_manager.RyuApp):
         )
 
         # 发送消息
-        print_flow_mod(flow_mod, dpid)
+        print_flow_mod(flow_mod, hex_dpid)
         datapath.send_msg(flow_mod)
         self.logger.info(f"Deleted flows with match: {match}")
 
