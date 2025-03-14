@@ -4,8 +4,8 @@ import mygrpc.python.apcontrol.apcontrol_pb2 as apcontrol_pb2
 import mygrpc.python.apcontrol.apcontrol_pb2_grpc as apcontrol_pb2_grpc
 
 class TestAP():
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, dpid):
+        self.dpid = dpid
 
 class APControl(apcontrol_pb2_grpc.APControlServicer):
     def __init__(self, aps):
@@ -14,11 +14,11 @@ class APControl(apcontrol_pb2_grpc.APControlServicer):
         ... # Do AP Connect Mesh
         ... # If OK
         for ap in self.aps:
-            if ap.name == request.apName:
+            if ap.dpid == request.dpid:
                 # ap.cmd(f"iw dev {request.portName} mesh join mesh-ssid")
                 print(f"Run: iw dev {request.portName} mesh join mesh-ssid")
         
-        print(f"{request.apName}:{request.portName} connect to mesh successfully")
+        print(f"{request.dpid}:{request.portName} connect to mesh successfully")
         return apcontrol_pb2.APInfoReply(status="OKK")
 
 def run(aps):
@@ -31,6 +31,6 @@ def run(aps):
     server.wait_for_termination()
 
 if __name__ == '__main__':
-    ap1 = TestAP("ap1")
-    ap2 = TestAP("ap2")
+    ap1 = TestAP("100001")
+    ap2 = TestAP("100002")
     run([ap1, ap2])

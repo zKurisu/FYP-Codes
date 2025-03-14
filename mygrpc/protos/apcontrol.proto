@@ -7,7 +7,7 @@ service APControl {
 
 /* Ryu controller send apName to AP */
 message APInfoRequest {
-    string apName = 1;
+    string dpid = 1;
     string portName = 2;
 }
 

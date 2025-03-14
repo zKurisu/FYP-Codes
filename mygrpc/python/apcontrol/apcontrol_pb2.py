@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0f\x61pcontrol.proto\"1\n\rAPInfoRequest\x12\x0e\n\x06\x61pName\x18\x01 \x01(\t\x12\x10\n\x08portName\x18\x02 \x01(\t\"\x1d\n\x0b\x41PInfoReply\x12\x0e\n\x06status\x18\x01 \x01(\t2<\n\tAPControl\x12/\n\rAPConnectMesh\x12\x0e.APInfoRequest\x1a\x0c.APInfoReply\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0f\x61pcontrol.proto\"/\n\rAPInfoRequest\x12\x0c\n\x04\x64pid\x18\x01 \x01(\t\x12\x10\n\x08portName\x18\x02 \x01(\t\"\x1d\n\x0b\x41PInfoReply\x12\x0e\n\x06status\x18\x01 \x01(\t2<\n\tAPControl\x12/\n\rAPConnectMesh\x12\x0e.APInfoRequest\x1a\x0c.APInfoReply\"\x00\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -32,9 +32,9 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'apcontrol_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_APINFOREQUEST']._serialized_start=19
-  _globals['_APINFOREQUEST']._serialized_end=68
-  _globals['_APINFOREPLY']._serialized_start=70
-  _globals['_APINFOREPLY']._serialized_end=99
-  _globals['_APCONTROL']._serialized_start=101
-  _globals['_APCONTROL']._serialized_end=161
+  _globals['_APINFOREQUEST']._serialized_end=66
+  _globals['_APINFOREPLY']._serialized_start=68
+  _globals['_APINFOREPLY']._serialized_end=97
+  _globals['_APCONTROL']._serialized_start=99
+  _globals['_APCONTROL']._serialized_end=159
 # @@protoc_insertion_point(module_scope)

@@ -5,12 +5,12 @@ from typing import ClassVar as _ClassVar, Optional as _Optional
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class APInfoRequest(_message.Message):
-    __slots__ = ("apName", "portName")
-    APNAME_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("dpid", "portName")
+    DPID_FIELD_NUMBER: _ClassVar[int]
     PORTNAME_FIELD_NUMBER: _ClassVar[int]
-    apName: str
+    dpid: str
     portName: str
-    def __init__(self, apName: _Optional[str] = ..., portName: _Optional[str] = ...) -> None: ...
+    def __init__(self, dpid: _Optional[str] = ..., portName: _Optional[str] = ...) -> None: ...
 
 class APInfoReply(_message.Message):
     __slots__ = ("status",)
