@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+service APControl {
+    /* Mininet AP Run this */
+    rpc APConnectMesh (APInfoRequest) returns (APInfoReply) {}
+}
+
+/* Ryu controller send apName to AP */
+message APInfoRequest {
+    string apName = 1;
+    string portName = 2;
+}
+
+/* AP Return whether success execute */
+message APInfoReply {
+    string status = 1;
+}
