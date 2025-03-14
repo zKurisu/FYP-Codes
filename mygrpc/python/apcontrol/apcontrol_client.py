@@ -10,5 +10,7 @@ def run(dpid, portName):
         status = response.status
         print(f"Mininet Server connect {dpid} to mesh: {status}")
 
+        return status
+
 if __name__ == '__main__':
     run(dpid="100001", portName="ap1-mp2")

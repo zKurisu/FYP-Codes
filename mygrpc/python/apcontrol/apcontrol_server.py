@@ -15,8 +15,8 @@ class APControl(apcontrol_pb2_grpc.APControlServicer):
         ... # If OK
         for ap in self.aps:
             if ap.dpid == request.dpid:
-                # ap.cmd(f"iw dev {request.portName} mesh join mesh-ssid")
-                print(f"Run: iw dev {request.portName} mesh join mesh-ssid")
+                ap.cmd(f"iw dev {request.portName} mesh join mesh-ssid")
+                print(f"{ap.name} Run: iw dev {request.portName} mesh join mesh-ssid")
         
         print(f"{request.dpid}:{request.portName} connect to mesh successfully")
         return apcontrol_pb2.APInfoReply(status="OKK")

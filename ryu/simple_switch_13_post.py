@@ -189,6 +189,8 @@ class SimpleSwitch13(app_manager.RyuApp):
                 self.logger.info(f"{portInfo.name} is up.")
                 self.logger.info(f"Call RPC to Mininet for mesh connection.")
                 self.logger.info(f"{dpid}: {portInfo.name}")
+                status = rpcClientRun(f"{dpid}", portInfo.name)
+                self.logger.info(f"Mininet response: {status}")
         
     
     def _delete_flows(self, datapath, match):

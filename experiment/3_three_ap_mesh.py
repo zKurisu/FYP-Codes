@@ -12,6 +12,8 @@ from mininet.log import info, setLogLevel
 import sys
 import requests
 import json
+import threading
+from mygrpc.python.apcontrol.apcontrol_server import run as rpcServerRun
 
 
 def mytopo(args):
@@ -50,6 +52,8 @@ def mytopo(args):
     ap2.start([c0])
     ap3.start([c0])
     send_apInfo([ap1, ap2, ap3])
+    rpcthread = threading.Thread(target=rpcServerRun, name="rpcServer", args=([ap1, ap2, ap3],))
+    rpcthread.start()
 
     CLI(net)
 
