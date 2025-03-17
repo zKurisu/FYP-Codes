@@ -2,7 +2,7 @@ import threading
 from mygrpc.python.apcontrol.apcontrol_server import run as rpcServerRun
 from prometheus.myprometheus import PrometheusClient
 from utils.send_apInfo import send_apInfo
-from mynet.multicenter.multicenter_with_mcds import MyNet
+from mynet.centerless.tmp import MyNet
 
 def run(mynet):
     ###### Net start
