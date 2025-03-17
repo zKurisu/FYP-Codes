@@ -17,15 +17,15 @@ class PrometheusClient():
     def ping_latency_ms(self, dst_host):
         while True:
             ping_output = self.host.cmd(f"ping -c 10 {dst_host.IP()}") # 需要确认这里是否会阻塞 -- Yes
-            print(ping_output)
+            # print(ping_output)
 
             latency_times = re.findall(r"time=(\d+\.?\d*) ms", ping_output)
             for latency in latency_times:
-                self.histogram.observe(latency)
+                self.histogram.observe(float(latency))
             
             result = re.search(r"rtt min/avg/max/mdev = (.*) ms", ping_output)
             all_metric = result.groups()[0] if result else "0/0/0/0"
-            print(all_metric)
+            # print(all_metric)
             min, avg, max, mdev = all_metric.split("/")
 
             self.gauge.labels(evaluate="min").set(float(min))

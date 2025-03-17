@@ -1,7 +1,7 @@
 import math
 import random
 from collections import deque
-from mcds.find_MCDS import find_mcds, draw_graph
+from utils.find_MCDS import find_mcds, draw_graph
 
 def generate_connected_udg(
     n: int,               # 节点数量 (必须 >=1)

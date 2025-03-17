@@ -6,24 +6,7 @@ from mn_wifi.wmediumdConnector import interference
 from mininet.node import RemoteController
 from mininet.log import setLogLevel, info
 from math import pi,cos,sin
-
-def next_mac(type, index):
-    """ All MAC for AP or Host """
-    if type == "host":
-        prefix = 0x00
-        suffix = index & 0xff
-    else:
-        prefix = 0x02
-        suffix = 0x00
-    return '%02x:%02x:%02x:%02x:%02x:%02x' % (
-        prefix,
-        (index >> 32) & 0xff,
-        (index >> 24) & 0xff,
-        (index >> 16) & 0xff,
-        (index >> 8) & 0xff,
-        suffix,
-    )
-
+from utils.next_mac import next_mac
 
 def add_center_node(ap_count, center_index, net):
     posi_x = center_index * 30
@@ -31,8 +14,8 @@ def add_center_node(ap_count, center_index, net):
     position = f"{posi_x},{posi_y},0"
     name = f"ap{ap_count}"
     # hex_index = hex(index)
-    host_mac = next_mac("host", center_index)
-    ap_mac = next_mac("ap", center_index)
+    host_mac = next_mac("host", ap_count)
+    ap_mac = next_mac("ap", ap_count)
 
     info(f"Add center ap: {ap_mac}\n")
     ap = net.addAccessPoint(name, wlans=3, position=position, mac=ap_mac)
@@ -121,8 +104,8 @@ def MultiCenterTopo():
     info("Create nodes...\n")
     center_nodes = []
     normal_nodes_dist = {} # Key is center_node
-    center_number = 3 ################### Specific Part
-    fanout = 3 ################### Specific Part
+    center_number = 2 ################### Specific Part
+    fanout = 1 ################### Specific Part
     ap_count = 1
     for i in range(1, center_number+1):
         center_node = add_center_node(ap_count, i, net)
@@ -163,4 +146,3 @@ def MultiCenterTopo():
 if __name__ == '__main__':
     setLogLevel('info')
     MultiCenterTopo()
-

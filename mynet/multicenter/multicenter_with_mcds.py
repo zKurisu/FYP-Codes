@@ -4,27 +4,13 @@ from mn_wifi.link import wmediumd, mesh
 from mn_wifi.wmediumdConnector import interference
 from mn_wifi.cli import CLI
 from mininet.log import setLogLevel, info
-from mininet.node import Controller
+from mininet.node import RemoteController
 
-from mcds.gen_UDG import generate_connected_udg
+from utils.gen_UDG import generate_connected_udg
+from utils.next_mac import next_mac
 import requests
 import json
 import time
-
-def next_mac(type, index):
-    """ All MAC for AP or Host """
-    if type == "host":
-        prefix = 0x00
-    else:
-        prefix = 0x02
-    return '%02x:%02x:%02x:%02x:%02x:%02x' % (
-        prefix,
-        (index >> 32) & 0xff,
-        (index >> 24) & 0xff,
-        (index >> 16) & 0xff,
-        (index >> 8) & 0xff,
-        index & 0xff,
-    )
 
 class MyNet():
     def __init__(self, ap_number=10, signal_range=31.484254489723796):
@@ -42,7 +28,7 @@ class MyNet():
         self.center_dpids = []
         self.aps = {}
         self.hosts = {}
-        self.controller = Controller("c0")
+        self.controller = RemoteController("c0", ip="127.0.0.1", port=6654)
     
     def _get_center_dpids(self):
         url = "http://127.0.0.1:8000/find_center"
@@ -113,7 +99,13 @@ class MyNet():
             self.net.addLink(self.hosts[dpid], center_ap)
             self.net.addLink(center_ap, intf=center_intf, cls=mesh, ssid="mesh-center", channel=5)
 
-    def run(self):
+    def get_ap_list(self):
+        return list(self.aps.values())
+
+    def get_host_list(self):
+        return list(self.hosts.values())
+
+    def config(self):
         info("Get init center dpids.......\n")
         self._get_center_dpids()
         info(self.center_dpids)
@@ -135,18 +127,21 @@ class MyNet():
 
         info("Add Links.......\n")
         self.add_links()
-
+    
+    def start(self):
         info("Start Net.......\n")
         self.net.build()
         self.controller.start()
         self.start_aps()
-
-        CLI(self.net)
+    
+    def stop(self):
         self.net.stop()
-        pass
 
+    def cli(self):
+        CLI(self.net)
 
-if __name__ == "__main__":
-    setLogLevel("info")
-    myNet = MyNet()
-    myNet.run()
+    def run(self):
+        self.config()
+        self.start()
+        self.cli()
+        self.stop()
