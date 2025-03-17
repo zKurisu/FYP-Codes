@@ -14,6 +14,7 @@ import requests
 import json
 import threading
 from mygrpc.python.apcontrol.apcontrol_server import run as rpcServerRun
+from prometheus.myprometheus import PrometheusClient
 
 
 def mytopo(args):
@@ -52,12 +53,19 @@ def mytopo(args):
     ap2.start([c0])
     ap3.start([c0])
     send_apInfo([ap1, ap2, ap3])
+
     rpcthread = threading.Thread(target=rpcServerRun, name="rpcServer", args=([ap1, ap2, ap3],))
     rpcthread.start()
+
+    p1 = PrometheusClient(h1, 11111)
+    pthread = threading.Thread(target=p1.ping_target, name="pthread", args=(h3,))
+    pthread.start()
 
     CLI(net)
 
     net.stop()
+    rpcthread.join()
+    pthread.join()
 
 def send_apInfo(aps):
     apInfo = {}
