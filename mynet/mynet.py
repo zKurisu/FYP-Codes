@@ -51,3 +51,11 @@ class MyNetBase():
         self.cli()
         self.stop()
     
+def set_mode(conf_func):
+    def wrapper(mynet):
+        info("Set propagation model...\n")
+        mynet.net.setPropagationModel(model="logDistance", exp=5)
+        info("Set plotGraph...\n")
+        mynet.net.plotGraph(max_x=150, max_y=100)
+        conf_func(mynet)
+    return wrapper

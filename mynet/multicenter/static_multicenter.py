@@ -1,4 +1,4 @@
-from mynet.mynet import MyNetBase
+from mynet.mynet import MyNetBase, set_mode
 
 from mn_wifi.link import mesh
 from mininet.log import info
@@ -115,6 +115,7 @@ class MyNet(MyNetBase):
     def get_host_list(self):
         return self.hosts
 
+    @set_mode
     def config(self):
         info("Create nodes...\n")
         ap_count = 1
@@ -127,11 +128,6 @@ class MyNet(MyNetBase):
             self.center_nodes.append(center_node)
             self.normal_nodes_dist.setdefault(center_node['ap'].name, normal_nodes)
         
-        info("Set propagation model...\n")
-        self.net.setPropagationModel(model="logDistance", exp=5)
-        info("Set plotGraph...\n")
-        self.net.plotGraph(max_x=150, max_y=100)
-
         info("Configure nodes...\n")
         self.net.configureNodes()
 
