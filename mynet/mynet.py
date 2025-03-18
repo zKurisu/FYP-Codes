@@ -5,6 +5,7 @@ from mn_wifi.wmediumdConnector import interference
 from mn_wifi.cli import CLI
 from mininet.log import setLogLevel, info
 from mininet.node import RemoteController
+from utils.next_mac import next_mac
 
 class MyNetBase():
     def __init__(self):
@@ -35,19 +36,40 @@ class MyNetBase():
                 return list(self.hosts.values())
         return []
 
+    def get_next_apName(self):
+        return f"ap{len(self.aps.keys()) + 1}" # No ap0
+
     def get_next_dpid(self):
         return str(10**15 + len(self.aps.keys()) + 1) # No ap0
+    
+    def get_next_hostName(self):
+        return f"h{len(self.get_host_list()) + 1}" # No ap0
 
-    def add_ap(self, *args, **kwargs):
-        if len(args) == 0:
-            info("AP Name is needed and it's position argument")
-            return "", ""
-        else:
-            apName = args[0]
+    def add_ap(self, **kwargs):
+        apName = self.get_next_apName()
         dpid = self.get_next_dpid()
-        ap = self.net.addAccessPoint(apName, dpid=dpid, wlans=kwargs['wlans'], ssid=kwargs['ssid'], position=kwargs['position'], mac=kwargs['mac'])
+        index = len(self.aps.keys()) + 1
+        mac = next_mac("ap", index)
+        ap = self.net.addAccessPoint(
+                apName,
+                dpid=dpid,
+                wlans=kwargs['wlans'],
+                ssid=kwargs['ssid'],
+                position=kwargs['position'],
+                mac=mac)
         self.aps[dpid] = ap
         return dpid, ap
+    
+    def add_host(self, dpid):
+        hostName = self.get_next_hostName()
+        index = len(self.get_host_list()) + 1
+        mac = next_mac("host", index)
+        host = self.net.addHost(
+                hostName,
+                mac=mac)
+        self.hosts.setdefault(dpid, [])
+        self.hosts[dpid].append(host)
+        return host
 
     def add_hosts(self, dpid, hosts):
         self.hosts[dpid] = hosts

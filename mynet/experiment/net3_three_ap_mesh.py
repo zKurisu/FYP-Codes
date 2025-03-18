@@ -10,20 +10,17 @@ class MyNet(MyNetBase):
     
     @set_mode
     def config(self):
-        dpid, ap1 = self.add_ap("ap1", wlans=2, ssid="ap1", position="20,20,0", mac="02:00:00:00:00:01")
-        h1 = self.net.addHost("h1", mac="00:00:00:00:00:11")
-        h2 = self.net.addHost("h2", mac="00:00:00:00:00:12")
-        self.add_hosts(dpid, [h1, h2])
+        dpid, ap1 = self.add_ap(wlans=2, ssid="ap1", position="20,20,0")
+        h1 = self.add_host(dpid)
+        h2 = self.add_host(dpid)
 
-        dpid, ap2 = self.add_ap("ap2", wlans=2, ssid="ap2", position="52,20,0", mac="02:00:00:00:00:02")
-        h3 = self.net.addHost("h3", mac="00:00:00:00:00:21")
-        h4 = self.net.addHost("h4", mac="00:00:00:00:00:22")
-        self.add_hosts(dpid, [h3, h4])
+        dpid, ap2 = self.add_ap(wlans=2, ssid="ap2", position="52,20,0")
+        h3 = self.add_host(dpid)
+        h4 = self.add_host(dpid)
 
-        dpid, ap3 = self.add_ap("ap3", wlans=2, ssid="ap3", position="100,20,0", mac="02:00:00:00:00:03")
-        h5 = self.net.addHost("h5", mac="00:00:00:00:00:31")
-        h6 = self.net.addHost("h6", mac="00:00:00:00:00:32")
-        self.add_hosts(dpid, [h5, h6])
+        dpid, ap3 = self.add_ap(wlans=2, ssid="ap3", position="100,20,0")
+        h5 = self.add_host(dpid)
+        h6 = self.add_host(dpid)
 
         self.net.configureNodes()
 
