@@ -38,9 +38,16 @@ class MyNetBase():
     def get_next_dpid(self):
         return str(10**15 + len(self.aps.keys()) + 1) # No ap0
 
-    def add_ap(self, dpid, ap):
+    def add_ap(self, *args, **kwargs):
+        if len(args) == 0:
+            info("AP Name is needed and it's position argument")
+            return "", ""
+        else:
+            apName = args[0]
+        dpid = self.get_next_dpid()
+        ap = self.net.addAccessPoint(apName, dpid=dpid, wlans=kwargs['wlans'], ssid=kwargs['ssid'], position=kwargs['position'], mac=kwargs['mac'])
         self.aps[dpid] = ap
-        return dpid
+        return dpid, ap
 
     def add_hosts(self, dpid, hosts):
         self.hosts[dpid] = hosts
