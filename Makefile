@@ -1,6 +1,9 @@
 pre:
 	sudo systemctl stop NetworkManager
 
+run:
+	sudo PYTHONPATH=. python main.py
+
 staticM:
 	sudo PYTHONPATH=. python mynet/multicenter/static-multi-center.py
 
@@ -20,3 +23,4 @@ Centerless:
 	sudo PYTHONPATH=. python mynet/centerless/centerless.py
 
 clean:
+	rm *.apconf

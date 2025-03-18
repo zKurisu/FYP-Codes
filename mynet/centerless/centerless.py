@@ -3,7 +3,6 @@ import sys
 from mininet.node import RemoteController
 from mininet.log import setLogLevel, info
 from mn_wifi.net import Mininet_wifi
-from mn_wifi.node import Station, AP, OVSAP
 from mn_wifi.cli import CLI
 from mn_wifi.link import wmediumd, mesh, adhoc
 from mn_wifi.wmediumdConnector import interference
@@ -14,8 +13,7 @@ class MyNet():
         self.net = Mininet_wifi(link=wmediumd, wmediumd_mode=interference)
         self.aps = []
         self.hosts = []
-        self.controller = self.net.addController('c1')
-        # c1 = net.addController('c1', controller=RemoteController, ip='127.0.0.1', port=6654)
+        self.controller = self.net.addController('c1', controller=RemoteController, ip='127.0.0.1', port=6654)
 
     def get_ap_list(self):
         return self.aps
