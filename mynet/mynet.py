@@ -53,10 +53,8 @@ class MyNetBase():
         ap = self.net.addAccessPoint(
                 apName,
                 dpid=dpid,
-                wlans=kwargs['wlans'],
-                ssid=kwargs['ssid'],
-                position=kwargs['position'],
-                mac=mac)
+                mac=mac,
+                **kwargs)
         self.aps[dpid] = ap
         return dpid, ap
     
