@@ -9,25 +9,26 @@ from mn_wifi.wmediumdConnector import interference
 from utils.next_mac import next_mac
 
 class MyNet():
-    def __init__(self):
+    def __init__(self, node_num=8): ######## Specify this
         self.net = Mininet_wifi(link=wmediumd, wmediumd_mode=interference)
         self.aps = []
         self.hosts = []
         self.controller = self.net.addController('c1', controller=RemoteController, ip='127.0.0.1', port=6654)
+        self.node_num = node_num
 
     def get_ap_list(self):
         return self.aps
     def get_host_list(self):
         return self.hosts
     
-    def add_nodes_batch(self, number):
+    def add_nodes_batch(self):
         """ A Node is [AP + Host] """
         opt_params = {}
         #opt_params['protocols']='OpenFlow13'
         opt_params['min_v'] = 0.5
         opt_params['max_v'] = 0.9
 
-        for i in range(1, number+1):
+        for i in range(1, self.node_num+1):
             host_mac = next_mac("host", i)
             ap_mac = next_mac("ap", i)
             h = self.net.addHost('h%d' % i, mac=host_mac)
@@ -53,7 +54,7 @@ class MyNet():
 
     def config(self):
         info("*** Creating nodes\n")
-        self.add_nodes_batch(8)
+        self.add_nodes_batch()
         
         info("*** Configuring Propagation Model\n")
         self.net.setPropagationModel(model="logDistance", exp=5)

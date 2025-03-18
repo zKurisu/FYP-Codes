@@ -12,6 +12,8 @@ class MyNet(MyNetBase):
         self.hosts = []
         self.center_nodes = []
         self.normal_nodes_dist = {}
+        self.center_number = 2 ################### Specific Part
+        self.fanout = 1 ################### Specific Part
         pass
 
     def add_center_node(self, ap_count, center_index):
@@ -115,14 +117,12 @@ class MyNet(MyNetBase):
 
     def config(self):
         info("Create nodes...\n")
-        center_number = 2 ################### Specific Part
-        fanout = 1 ################### Specific Part
         ap_count = 1
-        for i in range(1, center_number+1):
+        for i in range(1, self.center_number+1):
             center_node = self.add_center_node(ap_count, i)
             ap_count = ap_count + 1
-            normal_nodes = self.add_normal_nodes(ap_count, center_node, fanout)
-            ap_count = ap_count + fanout
+            normal_nodes = self.add_normal_nodes(ap_count, center_node, self.fanout)
+            ap_count = ap_count + self.fanout
 
             self.center_nodes.append(center_node)
             self.normal_nodes_dist.setdefault(center_node['ap'].name, normal_nodes)
