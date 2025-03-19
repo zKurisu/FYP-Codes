@@ -38,9 +38,13 @@ class MyNetBase():
         return []
 
     def get_next_apName(self):
+        if type(self.aps).__name__ == "list":
+            return f"{len(self.aps) + 1}"
         return f"ap{len(self.aps.keys()) + 1}" # No ap0
 
     def get_next_dpid(self):
+        if type(self.aps).__name__ == "list":
+            return str(10**15 + len(self.aps) + 1)
         return str(10**15 + len(self.aps.keys()) + 1) # No ap0
     
     def get_next_hostName(self):
@@ -49,7 +53,10 @@ class MyNetBase():
     def add_ap(self, **kwargs):
         apName = self.get_next_apName()
         dpid = self.get_next_dpid()
-        index = len(self.aps.keys()) + 1
+        if type(self.aps).__name__ == "list":
+            index = len(self.aps) + 1
+        else:
+            index = len(self.aps.keys()) + 1
         mac = next_mac("ap", index)
         ap = self.net.addAccessPoint(
                 apName,

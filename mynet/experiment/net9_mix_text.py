@@ -1,3 +1,5 @@
+### Centerless connect to ap2, mesh-ap1
+
 from mynet.mynet import MyNetBase, set_mode
 
 from mn_wifi.link import mesh
@@ -13,6 +15,7 @@ class MyNet(MyNetBase):
         self.hosts = {}
         self.center_nodes = []
         self.normal_nodes_dist = {}
+        self.centerless_ap = []
         self.center_number = 2 ################### Specific Part
         self.fanout = 1 ################### Specific Part
         pass
@@ -103,11 +106,30 @@ class MyNet(MyNetBase):
         for nodes in list(self.normal_nodes_dist.values()):
             for node in nodes:
                 node["ap"].start([self.controller])
-
+    
+    def start_centerless(self):
+        for ap in self.centerless_ap:
+            ap.start([self.controller])
 
     @set_mode
     def config(self):
         info("Create nodes...\n")
+        dpid, apx1 = self.add_ap(wlans=2, position="60,80,0")
+        hx1 = self.add_host(dpid)
+        self.centerless_ap.append(apx1)
+
+        dpid, apx2 = self.add_ap(wlans=2, position="40,80,0")
+        hx2 = self.add_host(dpid)
+        self.centerless_ap.append(apx2)
+
+        dpid, apx3 = self.add_ap(wlans=2, position="40,60,0")
+        hx3 = self.add_host(dpid)
+        self.centerless_ap.append(apx3)
+
+        dpid, apx4 = self.add_ap(wlans=2, position="20,70,0")
+        hx4 = self.add_host(dpid)
+        self.centerless_ap.append(apx4)
+
         ap_count = 1
         for i in range(1, self.center_number+1):
             center_node = self.add_center_node(ap_count, i)
@@ -118,6 +140,7 @@ class MyNet(MyNetBase):
             self.center_nodes.append(center_node)
             self.normal_nodes_dist.setdefault(center_node['ap'].name, normal_nodes)
         
+        
         info("Configure nodes...\n")
         self.net.configureNodes()
 
@@ -125,7 +148,24 @@ class MyNet(MyNetBase):
         self.add_center_links()
         self.add_normal_links()
 
+        #### Centerless Part
+        self.net.addLink(hx1, apx1)
+        self.net.addLink(hx2, apx2)
+        self.net.addLink(hx3, apx3)
+        self.net.addLink(hx4, apx4)
+
+        self.net.addLink(apx1, intf=f"{apx1.name}-wlan2", cls=mesh, ssid="mesh-ap5", channel=8)
+        self.net.addLink(apx2, intf=f"{apx2.name}-wlan2", cls=mesh, ssid="mesh-ap5", channel=8)
+        self.net.addLink(apx3, intf=f"{apx3.name}-wlan2", cls=mesh, ssid="mesh-ap5", channel=8)
+        self.net.addLink(apx4, intf=f"{apx4.name}-wlan2", cls=mesh, ssid="mesh-ap5", channel=8)
+        self.port_to_mesh[f"{apx1.name}-mp2"] = "mesh-ap5"
+        self.port_to_mesh[f"{apx2.name}-mp2"] = "mesh-ap5"
+        self.port_to_mesh[f"{apx3.name}-mp2"] = "mesh-ap5"
+        self.port_to_mesh[f"{apx4.name}-mp2"] = "mesh-ap5"
+
 
     def start_aps(self):
         self.start_center()
         self.start_normal()
+        self.start_centerless()
+
