@@ -28,3 +28,8 @@ def send_apInfo(aps):
         except requests.exceptions.RequestException as e:
             print("Failed to send apInfo for FastAPI")
 
+## Example: ap1-wlan2 -> ap1-mp2
+def wlan_to_mesh(intfName):
+    if intfName.find("wlan") == -1:
+        exit("intfName should contail [wlan]")
+    return intfName.replace("wlan", "mp")

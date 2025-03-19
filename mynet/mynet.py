@@ -15,6 +15,7 @@ class MyNetBase():
 
         self.aps = {} ##### Add ap in this way
         self.hosts = {} ##### Add host in this way
+        self.port_to_mesh = {} ##### Port to mesh ssid table
         info("Connect controller...\n")
         self.controller = RemoteController("c0", ip="127.0.0.1", port=6654)
         self.net.addController(self.controller)

@@ -13,11 +13,12 @@ def run(mynet):
     mynet.start()
 
     aps = mynet.get_ap_list()
+    port_to_mesh = mynet.port_to_mesh
     send_apInfo(aps)
     hosts = mynet.get_host_list()
 
     ###### GRPC
-    rpcthread = threading.Thread(target=rpcServerRun, name="rpcServer", args=(aps,))
+    rpcthread = threading.Thread(target=rpcServerRun, name="rpcServer", args=(aps, port_to_mesh,))
     rpcthread.start()
 
     ###### Prometheus

@@ -4,6 +4,7 @@ from mn_wifi.link import mesh
 from mininet.log import info
 from math import pi,cos,sin
 from utils.next_mac import next_mac
+from utils.send_apInfo import wlan_to_mesh
 
 class MyNet(MyNetBase):
     def __init__(self):
@@ -80,8 +81,11 @@ class MyNet(MyNetBase):
         for node in self.center_nodes:
             intf = f"{node["ap"].name}-wlan2"
             info(f"Add center link: {intf}\n")
+            ssid = "mesh-center"
             self.net.addLink(node["host"], node["ap"])
-            self.net.addLink(node["ap"], intf=intf, cls=mesh, ssid="mesh-center", channel=5)
+            self.net.addLink(node["ap"], intf=intf, cls=mesh, ssid=ssid, channel=5)
+            mpName = wlan_to_mesh(intf)
+            self.port_to_mesh[mpName] = ssid
 
     # Normal and host
     # Local mesh, name: mesh-apx
@@ -92,10 +96,14 @@ class MyNet(MyNetBase):
             ssid = f"mesh-{center_ap_name}"
             info(f"Add normal link: {center_intf}\n")
             self.net.addLink(center_node["ap"], intf=center_intf, cls=mesh, ssid=ssid, channel=8)
+            mpName = wlan_to_mesh(center_intf)
+            self.port_to_mesh[mpName] = ssid
 
             for normal_node in self.normal_nodes_dist[center_ap_name]:
                 normal_ap_name = normal_node["ap"].name
                 normal_intf = f"{normal_ap_name}-wlan2"
+                mpName = wlan_to_mesh(normal_intf)
+                self.port_to_mesh[mpName] = ssid
                 info(f"Add normal link: {normal_intf}\n")
                 self.net.addLink(normal_node["host"], normal_node["ap"])
                 self.net.addLink(normal_node["ap"], intf=normal_intf, cls=mesh, ssid=ssid, channel=8)
