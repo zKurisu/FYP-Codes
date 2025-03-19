@@ -24,3 +24,4 @@ Centerless:
 
 clean:
 	rm *.apconf
+	sudo mn -c

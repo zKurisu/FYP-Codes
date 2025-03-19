@@ -70,7 +70,7 @@ class MyNet(MyNetBase):
             # host = net.addHost(f"normal{i}-host", mac=f"00:00:00:00:{center_hex}:{normal_hex}")
             info(f"Add normal host: {host_mac}\n")
             host = self.net.addHost(f"h{i}", mac=host_mac)
-            self.aps.append(host)
+            self.hosts.append(host)
             normal_nodes.append({"ap": ap, "host": host, "position": position})
         return normal_nodes
 

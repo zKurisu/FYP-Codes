@@ -219,6 +219,7 @@ def print_flow_mod(mod, dpid):
     parser = mod.datapath.ofproto_parser
 
     # 构建要发送的数据
+    print(f"print_flow_mode: {dpid}\n")
     flow_data = {
         "datapath_id": dpid,
         "priority": mod.priority,

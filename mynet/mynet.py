@@ -43,7 +43,7 @@ class MyNetBase():
         return str(10**15 + len(self.aps.keys()) + 1) # No ap0
     
     def get_next_hostName(self):
-        return f"h{len(self.get_host_list()) + 1}" # No ap0
+        return f"h{len(self.get_host_list()) + 1}" # No h0
 
     def add_ap(self, **kwargs):
         apName = self.get_next_apName()

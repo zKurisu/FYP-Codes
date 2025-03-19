@@ -18,9 +18,13 @@ class MyNet(MyNetBase):
         h3 = self.add_host(dpid)
         h4 = self.add_host(dpid)
 
-        dpid, ap3 = self.add_ap(wlans=2, ssid="ap3", position="100,20,0")
+        dpid, ap3 = self.add_ap(wlans=2, ssid="ap3", position="80,20,0")
         h5 = self.add_host(dpid)
         h6 = self.add_host(dpid)
+
+        dpid, ap4 = self.add_ap(wlans=2, ssid="ap4", position="120,20,0")
+        h7 = self.add_host(dpid)
+        h8 = self.add_host(dpid)
 
         self.net.configureNodes()
 
@@ -30,7 +34,10 @@ class MyNet(MyNetBase):
         self.net.addLink(h4, ap2)
         self.net.addLink(h5, ap3)
         self.net.addLink(h6, ap3)
+        self.net.addLink(h7, ap4)
+        self.net.addLink(h8, ap4)
 
         self.net.addLink(ap1, intf='ap1-wlan2', cls=mesh, ssid='mesh-ssid', channel=5)
         self.net.addLink(ap2, intf='ap2-wlan2', cls=mesh, ssid='mesh-ssid', channel=5)
         self.net.addLink(ap3, intf='ap3-wlan2', cls=mesh, ssid='mesh-ssid', channel=5)
+        self.net.addLink(ap4, intf='ap4-wlan2', cls=mesh, ssid='mesh-ssid', channel=5)
