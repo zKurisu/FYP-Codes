@@ -24,14 +24,16 @@ def run(mynet):
 
     ###### Prometheus
     p1 = PrometheusClient(hosts[0], 11111)
-    # pthread = threading.Thread(target=p1.ping_target, name="pthread_ping", args=(hosts[1],))
-    pthread = threading.Thread(target=p1.iperf_targets, name="pthread_iperf", args=(hosts[1:],))
-    pthread.start()
+    #threading.Thread(target=p1.ping_target, name="pthread_ping", args=(hosts[1],)).start()
+    t1 = threading.Thread(target=p1.iperf_targets, name="pthread_iperf", args=(hosts[1:],))
+    t1.start()
 
     ###### CLI
     mynet.cli()
 
     ###### Clean
+    p1.clean()
+    t1.join()
     mynet.stop()
 
 if __name__ == "__main__":
