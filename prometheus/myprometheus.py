@@ -21,7 +21,7 @@ class PrometheusClient():
         self.prev_received_packets = {}
         print(f"Host {self.host.name} start: [tcpdump -i {self.host.name}-eth0 -w {self.pcap} &] ")
         self.host.cmd(f"tcpdump -i {self.host.name}-eth0 -w {self.pcap} &")
-        self.timer = threading.Timer(10.0, self.calculate_packet_loss)
+        self.timer = threading.Timer(20.0, self.calculate_packet_loss)
         self.timer.start()
         self.running = True
 
@@ -123,7 +123,7 @@ class PrometheusClient():
             print(f"No data now: {e}")
         finally:
             # 重新启动定时器
-            self.timer = threading.Timer(10.0, self.calculate_packet_loss)
+            self.timer = threading.Timer(20.0, self.calculate_packet_loss)
             self.timer.start()
 
     def clean(self):

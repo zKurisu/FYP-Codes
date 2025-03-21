@@ -25,14 +25,21 @@ class APControl(apcontrol_pb2_grpc.APControlServicer):
         print(f"{request.dpid}:{request.portName} connect to mesh successfully")
         return apcontrol_pb2.APInfoReply(status="OKK")
 
-def run(aps, port_to_mesh):
-    port = "10086"
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    apcontrol_pb2_grpc.add_APControlServicer_to_server(APControl(aps, port_to_mesh), server)
-    server.add_insecure_port("[::]:" + port)
-    print(f"Start RPC Server at {port}")
-    server.start()
-    server.wait_for_termination()
+class APCrpcserver():
+    def __init__(self, aps, port_to_mesh):
+        self.port = "10086"
+        self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+
+        apcontrol_pb2_grpc.add_APControlServicer_to_server(APControl(aps, port_to_mesh), self.server)
+        self.server.add_insecure_port("[::]:" + self.port)
+
+    def run(self):
+        print(f"Start RPC Server at {self.port}")
+        self.server.start()
+        self.server.wait_for_termination()
+
+    def stop(self):
+        self.server.stop(0)
 
 # if __name__ == '__main__':
 #     ap1 = TestAP("100001")
