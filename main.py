@@ -23,9 +23,10 @@ def run(mynet):
     rpcthread.start()
 
     ###### Prometheus
-    # p1 = PrometheusClient(hosts[0], 11111)
-    # pthread = threading.Thread(target=p1.ping_target, name="pthread", args=(hosts[1],))
-    # pthread.start()
+    p1 = PrometheusClient(hosts[0], 11111)
+    # pthread = threading.Thread(target=p1.ping_target, name="pthread_ping", args=(hosts[1],))
+    pthread = threading.Thread(target=p1.iperf_targets, name="pthread_iperf", args=(hosts[1:],))
+    pthread.start()
 
     ###### CLI
     mynet.cli()
