@@ -39,7 +39,7 @@ class PrometheusClient():
         self.ping_latency_ms(dst_host)
     
     def run_iperf(self, dst_host, gauge):
-        result = self.host.cmd(f"iperf -c {dst_host.name}")
+        result = self.host.cmd(f"iperf -c {dst_host.IP()}")
         
         output_lines = result.splitlines()
         bandwidth = float(0)
@@ -50,7 +50,7 @@ class PrometheusClient():
                 gauge.labels(dst_host=f"{dst_host.name}").set(bandwidth)
         
         gauge.labels(dst_host=f"{dst_host.name}").set(bandwidth)
-        # print(f"{self.host.name} iperf -c {dst_host.name}: {bandwidth}Mbits/sec")
+        print(f"{self.host.name} iperf -c {dst_host.name}: {bandwidth}Mbits/sec")
 
     def iperf_bd(self, dst_hosts):
         gauge = Gauge(f"iperf_bd_g_{self.host.name}", f"Iperf test for {self.host.name} as client", ["dst_host"])
