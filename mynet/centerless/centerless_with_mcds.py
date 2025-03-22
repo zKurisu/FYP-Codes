@@ -27,30 +27,11 @@ class MyNet(MyNetBase):
         self.net = Mininet_wifi(link=wmediumd, wmediumd_mode=interference)
 
 
-        self.center_dpids = []
         self.aps = {}
         self.hosts = {}
         self.controller = RemoteController("c0", ip="127.0.0.1", port=6654)
     
-    def _get_center_dpids(self):
-        url = "http://127.0.0.1:8000/find_center"
-        try:
-            data = {
-                "positions": self.positions,
-                "signal_range": self.signal_range
-            }
-            json_data = json.dumps(data)
-            response = requests.post(url, json_data)
-            response.raise_for_status()  # 如果状态码不是 200，抛出异常
-            self.center_dpids = response.json()["center_dpids"]
-            self.adjacency = response.json()["adjacency"]
-        except requests.exceptions.RequestException as e:
-            print("Request failed:", e)
-
     def add_aps(self):
-        #         ap1 = self.net.addAccessPoint("ap1")
-        #         self.aps["1"](ap1)
-        # 
         for dpid in self.positions.keys():
             dpid_str = str(dpid)
             ap_count = len(self.aps)
@@ -62,11 +43,11 @@ class MyNet(MyNetBase):
             position = f"{position_x},{position_y},{position_z}"
             ap_mac = next_mac("ap", ap_count+1)
 
-            ap = self.net.addAccessPoint(ap_name, dpid=dpid_str, wlans=3, position=position, mac=ap_mac)
+            ap = self.net.addAccessPoint(ap_name, dpid=dpid_str, wlans=2, position=position, mac=ap_mac)
             self.aps[dpid_str] = ap
 
             ap_mac = next_mac("host", ap_count+1)
-            host_count = ap_count
+            host_count = ap_count+1
             host_name = "h%d" % host_count
             host = self.net.addHost(host_name)
             self.hosts[dpid_str] = host
@@ -76,33 +57,14 @@ class MyNet(MyNetBase):
             self.aps[dpid].start([self.controller])
 
     def add_links(self):
-        # pass
-        added_links = {}
         for dpid in self.aps.keys():
-            added_links[dpid] = 1
+            ap = self.aps[dpid]
+            mesh_ssid = f"mesh-centerless"
+            mesh_intf = f"{ap.name}-wlan2"
+            self.net.addLink(ap, intf=mesh_intf, cls=mesh, ssid=mesh_ssid, channel=8)
+            self.port_to_mesh[mesh_intf] = mesh_ssid
+            self.net.addLink(self.hosts[dpid], ap)
 
-        for dpid in self.center_dpids:
-            center_ap = self.aps[dpid]
-            local_mesh_ssid = f"mesh-{center_ap.name}"
-            local_intf = f"{center_ap.name}-wlan3"
-            self.net.addLink(center_ap, intf=local_intf, cls=mesh, ssid=local_mesh_ssid, channel=8)
-            self.port_to_mesh[local_intf] = local_mesh_ssid
-
-            adj_list = self.adjacency[dpid]
-            for adj_dpid in adj_list:
-                if adj_dpid not in self.center_dpids and added_links[adj_dpid]:
-                    local_ap = self.aps[adj_dpid]
-                    local_intf = f"{local_ap.name}-wlan3"
-                    self.net.addLink(local_ap, intf=local_intf, cls=mesh, ssid=local_mesh_ssid, channel=8)
-                    self.port_to_mesh[local_intf] = local_mesh_ssid
-                    self.net.addLink(self.hosts[adj_dpid], local_ap)
-                    added_links[adj_dpid] = 0
-
-            center_intf = f"{center_ap.name}-wlan2"
-            info(f"Add center link: {center_intf}\n")
-            self.net.addLink(self.hosts[dpid], center_ap)
-            self.net.addLink(center_ap, intf=center_intf, cls=mesh, ssid="mesh-center", channel=5)
-            self.port_to_mesh[center_intf] = "mesh-center"
 
     def get_ap_list(self):
         return list(self.aps.values())
@@ -111,10 +73,6 @@ class MyNet(MyNetBase):
         return list(self.hosts.values())
 
     def config(self):
-        info("Get init center dpids.......\n")
-        self._get_center_dpids()
-        info(self.center_dpids)
-        info("\n")
         info("Get adjacency.......\n")
         info(self.adjacency)
 
