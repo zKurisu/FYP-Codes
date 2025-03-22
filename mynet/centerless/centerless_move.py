@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import sys
+from mynet.mynet import MyNetBase
 from mininet.node import RemoteController
 from mininet.log import setLogLevel, info
 from mn_wifi.net import Mininet_wifi
@@ -8,8 +9,9 @@ from mn_wifi.link import wmediumd, mesh, adhoc
 from mn_wifi.wmediumdConnector import interference
 from utils.next_mac import next_mac
 
-class MyNet():
+class MyNet(MyNetBase):
     def __init__(self, node_num=8): ######## Specify this
+        super(MyNet, self).__init__()
         self.net = Mininet_wifi(link=wmediumd, wmediumd_mode=interference)
         self.aps = []
         self.hosts = []
@@ -46,7 +48,7 @@ class MyNet():
         for i in range(0, len(self.aps)):
             self.net.addLink(self.aps[i], self.hosts[i])
             self.net.addLink(self.aps[i], intf=f'ap{i+1}-wlan2', cls=mesh, ssid='mesh-ssid1', channel=5)
-
+            self.port_to_mesh[f'ap{i+1}-wlan2'] = 'mesh-ssid1'
 
     def start_aps(self):
         for ap in self.aps:
