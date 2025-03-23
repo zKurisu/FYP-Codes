@@ -76,8 +76,15 @@ def generate_connected_udg(
     for k in nodes_dict.keys():
         dpid = 10**15 + k
         dpid_nodes_dict[dpid] = nodes_dict[k]
+
+    new_adj_dict = {}
+    for k, vs in adjacency_dict.items():
+        new_k = 10**15 + k
+        new_v = [10**15 + v for v in vs]
+        new_adj_dict[new_k] = new_v
+        pass
     
-    return dpid_nodes_dict, adjacency_dict
+    return dpid_nodes_dict, new_adj_dict
 
 
 def is_connected(adjacency: dict) -> bool:

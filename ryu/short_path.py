@@ -145,7 +145,7 @@ class SimpleSwitch13(app_manager.RyuApp):
             path = nx.shortest_path(self.net, src, dst)
             next_match = parser.OFPMatch(eth_dst=dst)
             back_match = parser.OFPMatch(eth_dst=src)
-            print(path)
+            print(f"Path is: {path}")
 
             for on_path_switch in range(1, len(path)-1):
                 now_switch = path[on_path_switch]
@@ -194,7 +194,7 @@ class SimpleSwitch13(app_manager.RyuApp):
                 continue
             else:
                 self.net.add_edge(link[0], link[1], **link[2])
-        print(f"Nodes: {self.net.nodes}")
+        # print(f"Nodes: {self.net.nodes}")
         print(f"Edges: {self.net.edges(data=True)}")
     
     @set_ev_cls(event.EventSwitchLeave)
@@ -206,8 +206,8 @@ class SimpleSwitch13(app_manager.RyuApp):
             self.net.remove_node(switch)
             self.net.remove_node(self.switch_host[switch])
         
-        print(f"Left Nodes: {self.net.nodes}")
-        print(f"Left Edges: {self.net.edges}")
+        # print(f"Left Nodes: {self.net.nodes}")
+        # print(f"Left Edges: {self.net.edges}")
 
 #     @set_ev_cls(event.EventLinkAdd, MAIN_DISPATCHER)
 #     def _add_link_and_node(self, ev):

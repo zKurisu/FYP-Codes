@@ -2,10 +2,10 @@ import threading
 from mygrpc.python.apcontrol.apcontrol_server import APCrpcserver
 from prometheus.myprometheus import PrometheusClient
 from utils.send_apInfo import send_apInfo
-# from mynet.centerless.centerless_with_mcds import MyNet
+from mynet.centerless.centerless_with_mcds import MyNet
 # from mynet.multicenter.multicenter_with_mcds import MyNet
 # from mynet.multicenter.static_multicenter import MyNet
-from mynet.experiment.net3_three_ap_mesh import MyNet
+# from mynet.experiment.net3_three_ap_mesh import MyNet
 # from mynet.experiment.net9_mix_text import MyNet
 
 def run(mynet):

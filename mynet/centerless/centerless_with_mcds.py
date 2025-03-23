@@ -18,15 +18,14 @@ class MyNet(MyNetBase):
         super(MyNet, self).__init__()
         self.signal_range = signal_range
         self.ap_number = ap_number
-        self.adjacency = {}
-        self.positions, _ = generate_connected_udg(
+        self.positions, self.adjs = generate_connected_udg(
             n=ap_number,
             signal_range=signal_range,
             seed=int(time.time())
         )
         self.net = Mininet_wifi(link=wmediumd, wmediumd_mode=interference)
 
-
+        self.ap_links = [] # [{ src_dpid: "", dst_dpid: "", port: int}]
         self.aps = {}
         self.hosts = {}
         self.controller = RemoteController("c0", ip="127.0.0.1", port=6654)
@@ -73,9 +72,7 @@ class MyNet(MyNetBase):
         return list(self.hosts.values())
 
     def config(self):
-        info("Get adjacency.......\n")
-        info(self.adjacency)
-
+        info(self.adjs)
         info("\n")
         info("Add aps.......\n")
         self.add_aps()
