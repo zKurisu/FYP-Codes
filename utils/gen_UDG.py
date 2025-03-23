@@ -74,13 +74,13 @@ def generate_connected_udg(
         raise ValueError("生成图不连通，请检查算法逻辑。")
     dpid_nodes_dict = {}
     for k in nodes_dict.keys():
-        dpid = 10**15 + k
+        dpid = hex(0x10**15 + k)[2:]
         dpid_nodes_dict[dpid] = nodes_dict[k]
 
     new_adj_dict = {}
     for k, vs in adjacency_dict.items():
-        new_k = dpid_hex_to_int(10**15 + k)
-        new_v = [dpid_hex_to_int(10**15 + v) for v in vs]
+        new_k = f"{0x10**15 + k}"
+        new_v = [f"{0x10**15 + v}" for v in vs]
         new_adj_dict[new_k] = new_v
         pass
     
@@ -102,10 +102,4 @@ def is_connected(adjacency: dict) -> bool:
                 visited.add(neighbor)
                 queue.append(neighbor)
     return len(visited) == len(adjacency)
-
-def dpid_hex_to_int(dpid):
-    hex_str = f"{dpid}"
-    num = int(hex_str, 16)
-    formatted_num = format(num, "d").zfill(16)
-    return formatted_num
 

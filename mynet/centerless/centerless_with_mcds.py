@@ -71,8 +71,15 @@ class MyNet(MyNetBase):
     def get_host_list(self):
         return list(self.hosts.values())
 
+    def make_ap_links(self):
+        for k, vs in self.adjs.items():
+            links = [{"src_dpid": k, "dst_dpid": v, "port": 2} for v in vs ]
+            self.ap_links = self.ap_links + links
+
     def config(self):
         info(self.adjs)
+        self.make_ap_links()
+        info(self.ap_links)
         info("\n")
         info("Add aps.......\n")
         self.add_aps()
