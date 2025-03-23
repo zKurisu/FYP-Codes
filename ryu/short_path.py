@@ -204,9 +204,10 @@ class SimpleSwitch13(app_manager.RyuApp):
 
         if self.net.has_node(switch):
             self.net.remove_node(switch)
+            self.net.remove_node(self.switch_host[switch])
         
-        print(self.net.nodes)
-        print(self.net.edges)
+        print(f"Left Nodes: {self.net.nodes}")
+        print(f"Left Edges: {self.net.edges}")
 
 #     @set_ev_cls(event.EventLinkAdd, MAIN_DISPATCHER)
 #     def _add_link_and_node(self, ev):
