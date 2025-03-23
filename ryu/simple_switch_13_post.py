@@ -21,9 +21,13 @@ from ryu.ofproto import ofproto_v1_3
 from ryu.lib.packet import packet
 from ryu.lib.packet import ethernet
 from ryu.lib.packet import ether_types
+from ryu.topology.api import get_link, get_switch
+from ryu.topology import event
 
 import httpx
 import re
+import networkx as nx
+import time
 from mygrpc.python.apcontrol.apcontrol_client import run as rpcClientRun
 
 
@@ -36,6 +40,8 @@ class SimpleSwitch13(app_manager.RyuApp):
         self.switch_hosts = {}
         self.switches = []
         self.count = 0
+        self.topology_api_app = self
+        self.net = nx.DiGraph()
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def switch_features_handler(self, ev):
@@ -153,7 +159,66 @@ class SimpleSwitch13(app_manager.RyuApp):
         out = parser.OFPPacketOut(datapath=datapath, buffer_id=msg.buffer_id,
                                   in_port=in_port, actions=actions, data=data)
         datapath.send_msg(out)
+
+    @set_ev_cls(event.EventSwitchEnter)
+    def get_topology_data(self, ev):
+        print("............Switch Enter")
+        switch_list = get_switch(self.topology_api_app, None)
+        switches =[switch.dp.id for switch in switch_list]
+        links_list = get_link(self.topology_api_app, None)
+        links=[(link.src.dpid,link.dst.dpid,{'port':link.src.port_no}) for link in links_list]
+
+        for switch in switches:
+            if self.net.has_node(switch):
+                continue
+            else:
+                self.net.add_node(switch)
+        
+        for link in links:
+            if self.net.has_edge(link[0], link[1]):
+                continue
+            else:
+                self.net.add_edge(link[0], link[1], port=link[2])
+        print(self.net.nodes)
+        print(self.net.edges)
     
+    @set_ev_cls(event.EventSwitchLeave)
+    def _switch_leave_handler(self, ev):
+        print("............Switch Leave")
+        switch = ev.switch.dp.id
+
+        if self.net.has_node(switch):
+            self.net.remove_node(switch)
+        
+        print(self.net.nodes)
+        print(self.net.edges)
+
+#     @set_ev_cls(event.EventLinkAdd, MAIN_DISPATCHER)
+#     def _add_link_and_node(self, ev):
+#         print(".........Link Add handler")
+#         link = ev.link
+#         src_node = link.src
+#         dst_node = link.dst
+# 
+#         if self.net.has_edge(src_node, dst_node):
+#             return
+# 
+#         self.net.add_edge(src_node, dst_node)
+#         print(f".........Link Added: ({src_node}, {dst_node})")
+# 
+#     @set_ev_cls(event.EventLinkDelete, MAIN_DISPATCHER)
+#     def _del_link_and_node(self, ev):
+#         print(".........Link Delete handler")
+#         link = ev.link
+#         src_node = link.src
+#         dst_node = link.dst
+# 
+#         if self.net.has_edge(src_node, dst_node):
+#             self.net.remove_edge(src_node, dst_node)
+#             print(f".........Link Deleted: ({src_node}, {dst_node})")
+#         else:
+#             return
+
     @set_ev_cls(ofp_event.EventOFPPortStatus, MAIN_DISPATCHER)
     def _port_status_handler(self, ev):
         msg = ev.msg
@@ -189,8 +254,8 @@ class SimpleSwitch13(app_manager.RyuApp):
                 self.logger.info(f"{portInfo.name} is up.")
                 self.logger.info(f"Call RPC to Mininet for mesh connection.")
                 self.logger.info(f"{dpid}: {portInfo.name}")
-                status = rpcClientRun(f"{dpid}", portInfo.name)
-                self.logger.info(f"Mininet response: {status}")
+                # status = rpcClientRun(f"{dpid}", portInfo.name)
+                # self.logger.info(f"Mininet response: {status}")
         
     
     def _delete_flows(self, datapath, match):

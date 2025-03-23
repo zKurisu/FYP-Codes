@@ -10,8 +10,11 @@ staticM:
 test:
 	sudo PYTHONPATH=. python mynet/experiment/3_three_ap_mesh.py
 
+Mryu:
+	ryu-manager --observe-links --ofp-tcp-listen-port 6654 ryu/rest_topology.py
+
 post:
-	ryu-manager --ofp-tcp-listen-port 6654 ryu/simple_switch_13_post.py
+	ryu-manager --observe-links --ofp-tcp-listen-port 6654 ryu/simple_switch_13_post.py
 
 Mrest:
 	PYTHONPATH=.:./rest uvicorn rest:app --host 0.0.0.0 --reload
