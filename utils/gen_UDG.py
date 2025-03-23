@@ -79,8 +79,8 @@ def generate_connected_udg(
 
     new_adj_dict = {}
     for k, vs in adjacency_dict.items():
-        new_k = 10**15 + k
-        new_v = [10**15 + v for v in vs]
+        new_k = dpid_hex_to_int(10**15 + k)
+        new_v = [dpid_hex_to_int(10**15 + v) for v in vs]
         new_adj_dict[new_k] = new_v
         pass
     
@@ -102,3 +102,10 @@ def is_connected(adjacency: dict) -> bool:
                 visited.add(neighbor)
                 queue.append(neighbor)
     return len(visited) == len(adjacency)
+
+def dpid_hex_to_int(dpid):
+    hex_str = f"{dpid}"
+    num = int(hex_str, 16)
+    formatted_num = format(num, "d").zfill(16)
+    return formatted_num
+
