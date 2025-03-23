@@ -84,6 +84,24 @@ class SimpleSwitch13(app_manager.RyuApp):
         hex_dpid = format(datapath.id, "x")
         print_flow_mod(mod, hex_dpid)
         datapath.send_msg(mod)
+
+    @set_ev_cls(ofp_event.EventOFPPortDescStatsReply, MAIN_DISPATCHER)
+    def port_desc_stats_reply_handler(self, ev):
+        datapath = ev.msg.datapath
+        dpid = format(datapath.id, "d").zfill(16)
+        hex_dpid = format(datapath.id, "x")
+        
+        for p in ev.msg.body:
+            port_name = p.name.decode('utf-8')
+            if re.search(r"eth" , port_name):
+                host_mac = "00:00:00:00:00:" + hex_dpid[len(hex_dpid)-2:]
+                print(f"Host mac is {host_mac}")
+                self.switch_host[dpid] = host_mac
+                self.net.add_node(host_mac) # Add host to net
+                self.net.add_edge(host_mac, dpid, port=p.port_no) # Add edge for AP and Host
+
+                self.logger.info("Port No: %d, Name: %s, HW Addr: %s",
+                                p.port_no, p.name, p.hw_addr)
     
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def _packet_in_handler(self, ev):
@@ -97,6 +115,7 @@ class SimpleSwitch13(app_manager.RyuApp):
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
         in_port = msg.match['in_port']
+        port_info = datapath.ports.get(in_port)
 
         pkt = packet.Packet(msg.data)
         eth = pkt.get_protocols(ethernet.ethernet)[0]
@@ -118,12 +137,6 @@ class SimpleSwitch13(app_manager.RyuApp):
         self.mac_to_port[dpid][src] = in_port
         print_mac_to_port(self.mac_to_port)
         # self.logger.info(self.mac_to_port)
-
-        if (src not in self.switch_host.values()) and src.startswith("00"):
-            self.switch_host[dpid] = src
-            self.net.add_node(src) # Add host to net
-            self.net.add_edge(src, dpid, port=3) # Add edge for AP and Host
-            self.logger.info(f"{dpid} connect host: {src}")
 
         if self.net.has_node(dst):
             print("%s in self.net" % dst)
@@ -187,7 +200,7 @@ class SimpleSwitch13(app_manager.RyuApp):
     @set_ev_cls(event.EventSwitchLeave)
     def _switch_leave_handler(self, ev):
         print("............Switch Leave")
-        switch = ev.switch.dp.id
+        switch = format(ev.switch.dp.id, "d").zfill(16)
 
         if self.net.has_node(switch):
             self.net.remove_node(switch)
@@ -245,7 +258,7 @@ class SimpleSwitch13(app_manager.RyuApp):
                         self.net.remove_edge(*edge)
 
                 self.logger.info(f"{portInfo.name} is down by administrator.")
-                target_host = self.switch_host.get(target_dpid)
+                target_host = self.switch_host[target_dpid]
 
                 if target_host:
                     for switch in self.switch_map.values():
