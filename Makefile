@@ -11,7 +11,7 @@ test:
 	sudo PYTHONPATH=. python mynet/experiment/3_three_ap_mesh.py
 
 Mryu:
-	ryu-manager --observe-links --ofp-tcp-listen-port 6654 ryu/rest_topology.py
+	ryu-manager --observe-links --ofp-tcp-listen-port 6654 ryu/short_path.py
 
 post:
 	ryu-manager --observe-links --ofp-tcp-listen-port 6654 ryu/simple_switch_13_post.py
