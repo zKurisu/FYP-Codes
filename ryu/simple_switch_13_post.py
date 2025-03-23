@@ -236,6 +236,12 @@ class SimpleSwitch13(app_manager.RyuApp):
         elif msg.reason == ofp.OFPPR_MODIFY:
             self.logger.info(f"{portInfo.name} is modified.")
             if portInfo.config == ofp.OFPPC_PORT_DOWN:
+                port_attr = nx.get_edge_attributes(self.net, "port")
+
+                for edge, port in port_attr.items():
+                    if port == portInfo.port_no and datapath.id in edge:
+                        self.net.remove_edge(*edge)
+
                 self.logger.info(f"{portInfo.name} is down by administrator.")
                 target_hosts = self.switch_hosts[target_dpid].values()
 
@@ -250,6 +256,14 @@ class SimpleSwitch13(app_manager.RyuApp):
 
                     self.mac_to_port = {}
             else:
+                links_list = get_link(self.topology_api_app, None)
+                links=[(link.src.dpid,link.dst.dpid,{'port':link.src.port_no}) for link in links_list]
+                for link in links:
+                    if self.net.has_edge(link[0], link[1]):
+                        continue
+                    else:
+                        self.net.add_edge(link[0], link[1], port=link[2])
+
                 dpid = format(datapath.id, "x")
                 self.logger.info(f"{portInfo.name} is up.")
                 self.logger.info(f"Call RPC to Mininet for mesh connection.")
