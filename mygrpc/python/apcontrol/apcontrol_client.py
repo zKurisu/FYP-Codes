@@ -1,6 +1,7 @@
 import grpc
 import mygrpc.python.apcontrol.apcontrol_pb2 as apcontrol_pb2
 import mygrpc.python.apcontrol.apcontrol_pb2_grpc as apcontrol_pb2_grpc
+from google.protobuf import empty_pb2
 
 def run(dpid, portName):
     with grpc.insecure_channel("localhost:10086") as channel:
@@ -12,5 +13,15 @@ def run(dpid, portName):
 
         return status
 
+def getAPLinks():
+    with grpc.insecure_channel("localhost:10086") as channel:
+        stub = apcontrol_pb2_grpc.APControlStub(channel)
+        request = empty_pb2.Empty()
+        response = stub.GetAPLinks(request)
+        print(f"Ryu send getAPLinks request to Mininet Server")
+
+        return response
+
 if __name__ == '__main__':
     run(dpid="100001", portName="ap1-mp2")
+

@@ -27,6 +27,7 @@ class MyNet(MyNetBase):
         self.net = Mininet_wifi(link=wmediumd, wmediumd_mode=interference)
 
 
+        self.ap_links = [] # [{ src_dpid: "", dst_dpid: "", port: int}]
         self.center_dpids = []
         self.aps = {}
         self.hosts = {}
@@ -52,24 +53,17 @@ class MyNet(MyNetBase):
         #         self.aps["1"](ap1)
         # 
         for dpid in self.positions.keys():
-            dpid_str = str(dpid)
-            ap_count = len(self.aps)
-            ap_name = "ap%d" % (ap_count+1)
             ap_position = self.positions[dpid]
             position_x = ap_position[0]
             position_y = ap_position[1]
             position_z = 0
             position = f"{position_x},{position_y},{position_z}"
-            ap_mac = next_mac("ap", ap_count+1)
 
-            ap = self.net.addAccessPoint(ap_name, dpid=dpid_str, wlans=3, position=position, mac=ap_mac)
-            self.aps[dpid_str] = ap
+            dpid, _ = self.add_ap(wlans=3, position=position)
 
-            ap_mac = next_mac("host", ap_count+1)
-            host_count = ap_count
-            host_name = "h%d" % host_count
-            host = self.net.addHost(host_name)
-            self.hosts[dpid_str] = host
+            host = self.add_host(dpid)
+            self.hosts[dpid] = host
+
 
     def start_aps(self):
         for dpid in self.aps.keys():
@@ -110,6 +104,32 @@ class MyNet(MyNetBase):
     def get_host_list(self):
         return list(self.hosts.values())
 
+    def make_ap_links(self):
+            # for k, vs in self.adjacency.items():
+        for k, vs in self.adjacency.items():
+            new_k = int(k, 16)
+            new_vs = [ int(v, 16) for v in vs ]
+            links = []
+            if k in self.center_dpids:
+                for v in vs:
+                    new_v = int(v, 16)
+                    if v in self.center_dpids:
+                        link = {"src_dpid": str(new_k), "dst_dpid": str(new_v), "port_no": 2}
+                    else:
+                        link = {"src_dpid": str(new_k), "dst_dpid": str(new_v), "port_no": 3}
+                    links.append(link)
+            else:
+                find_center_flag = False
+                for v in vs:
+                    new_v = int(v, 16)
+                    if v in self.center_dpids and find_center_flag:
+                        continue
+                    if v in self.center_dpids:
+                        find_center_flag = True
+                    link = {"src_dpid": str(new_k), "dst_dpid": str(new_v), "port_no": 3}
+                    links.append(link)
+            self.ap_links = self.ap_links + links
+
     def config(self):
         info("Get init center dpids.......\n")
         self._get_center_dpids()
@@ -117,6 +137,11 @@ class MyNet(MyNetBase):
         info("\n")
         info("Get adjacency.......\n")
         info(self.adjacency)
+        info("\n")
+        info("Make ap links.......\n")
+        self.make_ap_links()
+        info(self.ap_links)
+        info("\n")
 
         info("\n")
         info("Add aps.......\n")

@@ -17,11 +17,12 @@ from ryu.base import app_manager
 from ryu.controller import ofp_event
 from ryu.controller.handler import CONFIG_DISPATCHER, MAIN_DISPATCHER
 from ryu.controller.handler import set_ev_cls
-from ryu.ofproto import ofproto_v1_3
+from ryu.ofproto import ofproto_v1_3, ether
 from ryu.lib.packet import packet
 from ryu.lib.packet import ethernet
 from ryu.lib.packet import ether_types
-from ryu.topology.api import get_link, get_switch
+from ryu.lib.packet import arp
+from ryu.topology.api import get_switch
 from ryu.topology import event
 
 import httpx
@@ -29,6 +30,7 @@ import re
 import networkx as nx
 import time
 from mygrpc.python.apcontrol.apcontrol_client import run as rpcClientRun
+from mygrpc.python.apcontrol.apcontrol_client import getAPLinks as rpcGetAPLinks
 
 
 class SimpleSwitch13(app_manager.RyuApp):
@@ -42,6 +44,18 @@ class SimpleSwitch13(app_manager.RyuApp):
         self.count = 0
         self.topology_api_app = self
         self.net = nx.Graph()
+        self.arp_table = {
+                    '10.0.0.1':'00:00:00:00:00:01',
+                    '10.0.0.2':'00:00:00:00:00:02',
+                    '10.0.0.3':'00:00:00:00:00:03',
+                    '10.0.0.4':'00:00:00:00:00:04',
+                    '10.0.0.5':'00:00:00:00:00:05',
+                    '10.0.0.6':'00:00:00:00:00:06',
+                    '10.0.0.7':'00:00:00:00:00:07',
+                    '10.0.0.8':'00:00:00:00:00:08',
+                    '10.0.0.9':'00:00:00:00:00:09',
+                    '10.0.0.10':'00:00:00:00:00:0a'}
+
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def switch_features_handler(self, ev):
@@ -98,7 +112,7 @@ class SimpleSwitch13(app_manager.RyuApp):
                 print(f"Host mac is {host_mac}")
                 self.switch_host[dpid] = host_mac
                 self.net.add_node(host_mac) # Add host to net
-                self.net.add_edge(host_mac, dpid, port=p.port_no) # Add edge for AP and Host
+                self.net.add_edge(host_mac, dpid, port_no=p.port_no) # Add edge for AP and Host
 
                 self.logger.info("Port No: %d, Name: %s, HW Addr: %s",
                                 p.port_no, p.name, p.hw_addr)
@@ -115,14 +129,22 @@ class SimpleSwitch13(app_manager.RyuApp):
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
         in_port = msg.match['in_port']
-        port_info = datapath.ports.get(in_port)
 
         pkt = packet.Packet(msg.data)
         eth = pkt.get_protocols(ethernet.ethernet)[0]
 
+        out_port = None
         if eth.ethertype == ether_types.ETH_TYPE_LLDP:
             # ignore lldp packet
             return
+        
+        pkt_arp = pkt.get_protocol(arp.arp)
+        if eth.ethertype == 2054:
+            print("arp")
+            self.handle_arp(datapath, in_port, eth, pkt_arp)
+            return
+
+
         dst = eth.dst
         src = eth.src
 
@@ -135,10 +157,10 @@ class SimpleSwitch13(app_manager.RyuApp):
 
         # learn a mac address to avoid FLOOD next time.
         self.mac_to_port[dpid][src] = in_port
-        print_mac_to_port(self.mac_to_port)
+        # print_mac_to_port(self.mac_to_port)
         # self.logger.info(self.mac_to_port)
-
-        if self.net.has_node(dst):
+        print(f"src: {src}, dst: {dst}")
+        if self.net.has_node(dst) and self.net.has_node(src):
             print("%s in self.net" % dst)
             print(self.net.edges(data=True))
 
@@ -153,8 +175,8 @@ class SimpleSwitch13(app_manager.RyuApp):
                 back_switch = path[on_path_switch-1]
                 print(self.net[now_switch][next_switch])
                 print(self.net[now_switch][back_switch])
-                next_port = self.net[now_switch][next_switch]['port']
-                back_port = self.net[now_switch][back_switch]['port']
+                next_port = self.net[now_switch][next_switch]['port_no']
+                back_port = self.net[now_switch][back_switch]['port_no']
                 actions = [parser.OFPActionOutput(next_port)]
                 self.add_flow(datapath=self.switch_map[now_switch], match=next_match, actions=actions, priority=1)
                 
@@ -177,11 +199,10 @@ class SimpleSwitch13(app_manager.RyuApp):
     def get_topology_data(self, ev):
         print("............Switch Enter")
         switch_list = get_switch(self.topology_api_app, None)
-        switches =[format(switch.dp.id, "d").zfill(16) for switch in switch_list]
-        links_list = get_link(self.topology_api_app, None)
-        links=[(format(link.src.dpid, "d").zfill(16),
-                format(link.dst.dpid, "d").zfill(16),
-                {'port':(link.src.port_no)}) for link in links_list]
+        switches = [format(switch.dp.id, "d").zfill(16) for switch in switch_list]
+        response = rpcGetAPLinks()
+        links = response.ap_links
+        # print(f"RPC Return Links: {links}")
 
         for switch in switches:
             if self.net.has_node(switch):
@@ -190,10 +211,10 @@ class SimpleSwitch13(app_manager.RyuApp):
                 self.net.add_node(switch)
         
         for link in links:
-            if self.net.has_edge(link[0], link[1]):
+            if self.net.has_edge(link.src_dpid, link.dst_dpid):
                 continue
             else:
-                self.net.add_edge(link[0], link[1], **link[2])
+                self.net.add_edge(link.src_dpid, link.dst_dpid, port_no=link.port_no)
         # print(f"Nodes: {self.net.nodes}")
         print(f"Edges: {self.net.edges(data=True)}")
     
@@ -269,20 +290,12 @@ class SimpleSwitch13(app_manager.RyuApp):
                         match = parser.OFPMatch(eth_src=target_host)
                         self._delete_flows(switch, match)
             else:
-                links_list = get_link(self.topology_api_app, None)
-                links=[(link.src.dpid,link.dst.dpid,{'port':link.src.port_no}) for link in links_list]
-                for link in links:
-                    if self.net.has_edge(link[0], link[1]):
-                        continue
-                    else:
-                        self.net.add_edge(link[0], link[1], port=link[2])
-
                 dpid = format(datapath.id, "x")
                 self.logger.info(f"{portInfo.name} is up.")
                 self.logger.info(f"Call RPC to Mininet for mesh connection.")
                 self.logger.info(f"{dpid}: {portInfo.name}")
-                # status = rpcClientRun(f"{dpid}", portInfo.name)
-                # self.logger.info(f"Mininet response: {status}")
+                status = rpcClientRun(f"{dpid}", portInfo.name)
+                self.logger.info(f"Mininet response: {status}")
         
     
     def _delete_flows(self, datapath, match):
@@ -304,6 +317,51 @@ class SimpleSwitch13(app_manager.RyuApp):
         print_flow_mod(flow_mod, hex_dpid)
         datapath.send_msg(flow_mod)
         self.logger.info(f"Deleted flows with match: {match}")
+	
+    def send_packet(self, dp, port, pkt):
+        ofproto = dp.ofproto
+        parser = dp.ofproto_parser
+        pkt.serialize()
+        data = pkt.data
+        action = [parser.OFPActionOutput(port=port)]
+
+        out = parser.OFPPacketOut(
+                datapath=dp, buffer_id = ofproto.OFP_NO_BUFFER,
+                in_port = ofproto.OFPP_CONTROLLER,
+                actions=action, data=data)
+
+        dp.send_msg(out)
+
+    
+    def handle_arp(self, dp, port, pkt_ethernet, pkt_arp):
+        if pkt_arp.opcode != arp.ARP_REQUEST:
+            return
+        
+        if self.arp_table.get(pkt_arp.dst_ip) == None:
+            return
+        get_mac = self.arp_table[pkt_arp.dst_ip]
+        
+
+        pkt = packet.Packet()
+        pkt.add_protocol(
+            ethernet.ethernet(
+                ethertype=ether.ETH_TYPE_ARP,
+                dst = pkt_ethernet.src,
+                src = get_mac
+            )
+        )
+
+        pkt.add_protocol(
+            arp.arp(
+                opcode=arp.ARP_REPLY,
+                src_mac= get_mac,
+                src_ip = pkt_arp.dst_ip,
+                dst_mac= pkt_arp.src_mac,
+                dst_ip = pkt_arp.src_ip 
+            )
+        )
+
+        self.send_packet(dp, port, pkt)
 
 
 def print_flow_mod(mod, dpid):
@@ -361,3 +419,4 @@ def print_mac_to_port(mac_to_port):
                 print(f"Failed to send mac to port table. Status code: {response.status_code}")
     except Exception as e:
         print(f"Error sending POST request: {e}")
+

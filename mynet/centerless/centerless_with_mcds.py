@@ -32,24 +32,17 @@ class MyNet(MyNetBase):
     
     def add_aps(self):
         for dpid in self.positions.keys():
-            dpid_str = str(dpid)
-            ap_count = len(self.aps)
-            ap_name = "ap%d" % (ap_count+1)
             ap_position = self.positions[dpid]
             position_x = ap_position[0]
             position_y = ap_position[1]
             position_z = 0
             position = f"{position_x},{position_y},{position_z}"
-            ap_mac = next_mac("ap", ap_count+1)
 
-            ap = self.net.addAccessPoint(ap_name, dpid=dpid_str, wlans=2, position=position, mac=ap_mac)
-            self.aps[dpid_str] = ap
+            dpid, ap = self.add_ap(wlans=2, position=position)
+            self.aps[dpid] = ap
 
-            ap_mac = next_mac("host", ap_count+1)
-            host_count = ap_count+1
-            host_name = "h%d" % host_count
-            host = self.net.addHost(host_name)
-            self.hosts[dpid_str] = host
+            host = self.add_host(dpid)
+            self.hosts[dpid] = host
 
     def start_aps(self):
         for dpid in self.aps.keys():
@@ -73,7 +66,7 @@ class MyNet(MyNetBase):
 
     def make_ap_links(self):
         for k, vs in self.adjs.items():
-            links = [{"src_dpid": k, "dst_dpid": v, "port": 2} for v in vs ]
+            links = [{"src_dpid": k, "dst_dpid": v, "port_no": 2} for v in vs ]
             self.ap_links = self.ap_links + links
 
     def config(self):

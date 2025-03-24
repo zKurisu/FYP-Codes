@@ -1,8 +1,10 @@
 syntax = "proto3";
+import "google/protobuf/empty.proto";
 
 service APControl {
     /* Mininet AP Run this */
     rpc APConnectMesh (APInfoRequest) returns (APInfoReply) {}
+    rpc GetAPLinks (google.protobuf.Empty) returns (APLinksResponse) {}
 }
 
 /* Ryu controller send apName to AP */
@@ -15,3 +17,14 @@ message APInfoRequest {
 message APInfoReply {
     string status = 1;
 }
+
+message APLinks {
+    string src_dpid = 1;
+    string dst_dpid = 2;
+    int32 port_no = 3;
+}
+
+message APLinksResponse {
+    repeated APLinks ap_links = 1;
+}
+

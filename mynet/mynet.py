@@ -45,7 +45,7 @@ class MyNetBase():
     def get_next_dpid(self):
         if type(self.aps).__name__ == "list":
             return str(10**15 + len(self.aps) + 1)
-        return str(10**15 + len(self.aps.keys()) + 1) # No ap0
+        return hex(0x10**15 + len(self.aps.keys()) + 1)[2:] # No ap0
     
     def get_next_hostName(self):
         return f"h{len(self.get_host_list()) + 1}" # No h0

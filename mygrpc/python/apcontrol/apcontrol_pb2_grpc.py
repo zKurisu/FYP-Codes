@@ -4,6 +4,7 @@ import grpc
 import warnings
 
 import mygrpc.python.apcontrol.apcontrol_pb2 as apcontrol__pb2
+from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 GRPC_GENERATED_VERSION = '1.70.0'
 GRPC_VERSION = grpc.__version__
@@ -39,6 +40,11 @@ class APControlStub(object):
                 request_serializer=apcontrol__pb2.APInfoRequest.SerializeToString,
                 response_deserializer=apcontrol__pb2.APInfoReply.FromString,
                 _registered_method=True)
+        self.GetAPLinks = channel.unary_unary(
+                '/APControl/GetAPLinks',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=apcontrol__pb2.APLinksResponse.FromString,
+                _registered_method=True)
 
 
 class APControlServicer(object):
@@ -51,6 +57,12 @@ class APControlServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetAPLinks(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_APControlServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -58,6 +70,11 @@ def add_APControlServicer_to_server(servicer, server):
                     servicer.APConnectMesh,
                     request_deserializer=apcontrol__pb2.APInfoRequest.FromString,
                     response_serializer=apcontrol__pb2.APInfoReply.SerializeToString,
+            ),
+            'GetAPLinks': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetAPLinks,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=apcontrol__pb2.APLinksResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -87,6 +104,33 @@ class APControl(object):
             '/APControl/APConnectMesh',
             apcontrol__pb2.APInfoRequest.SerializeToString,
             apcontrol__pb2.APInfoReply.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetAPLinks(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/APControl/GetAPLinks',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            apcontrol__pb2.APLinksResponse.FromString,
             options,
             channel_credentials,
             insecure,
