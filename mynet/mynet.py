@@ -19,6 +19,7 @@ class MyNetBase():
         info("Connect controller...\n")
         self.controller = RemoteController("c0", ip="127.0.0.1", port=6654)
         self.net.addController(self.controller)
+        self.signal_range = 31.484254489723796
     
     def get_ap_list(self):
         return list(self.aps.values())

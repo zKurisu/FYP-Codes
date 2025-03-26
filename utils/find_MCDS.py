@@ -3,19 +3,7 @@ import matplotlib.pyplot as plt
 
 def find_mcds(nodes_dict, signal_range):
     # 构建邻接表
-    adj = {id: [] for id in nodes_dict}
-    ids = list(nodes_dict.keys())
-    n = len(ids)
-    for i in range(n):
-        id1 = ids[i]
-        x1, y1 = nodes_dict[id1]
-        for j in range(i + 1, n):
-            id2 = ids[j]
-            x2, y2 = nodes_dict[id2]
-            distance = ((x1 - x2)**2 + (y1 - y2)**2)**0.5
-            if distance <= signal_range:
-                adj[id1].append(id2)
-                adj[id2].append(id1)
+    adj = get_adjacency(nodes_dict, signal_range)
     # 初始化颜色和集合
     color = {id: 'white' for id in nodes_dict}
     mcds = []
@@ -75,3 +63,21 @@ def draw_graph(nodes_dict, adj, mcds=None, title="Graph"):
     nx.draw(G, pos, with_labels=True, node_color=node_colors, node_size=800, font_size=12, font_weight='bold')
     plt.title(title)
     plt.show()
+
+def get_adjacency(nodes_dict, signal_range):
+    # 构建邻接表
+    adj = {id: [] for id in nodes_dict}
+    ids = list(nodes_dict.keys())
+    n = len(ids)
+    for i in range(n):
+        id1 = ids[i]
+        x1, y1 = nodes_dict[id1]
+        for j in range(i + 1, n):
+            id2 = ids[j]
+            x2, y2 = nodes_dict[id2]
+            distance = ((x1 - x2)**2 + (y1 - y2)**2)**0.5
+            if distance <= signal_range:
+                adj[id1].append(id2)
+                adj[id2].append(id1)
+    return adj
+

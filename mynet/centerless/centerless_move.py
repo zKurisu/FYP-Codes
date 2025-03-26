@@ -8,20 +8,30 @@ from mn_wifi.cli import CLI
 from mn_wifi.link import wmediumd, mesh, adhoc
 from mn_wifi.wmediumdConnector import interference
 from utils.next_mac import next_mac
+from utils.find_MCDS import get_adjacency
 
 class MyNet(MyNetBase):
-    def __init__(self, node_num=8): ######## Specify this
+    def __init__(self, ap_number=8): ######## Specify this
         super(MyNet, self).__init__()
         self.net = Mininet_wifi(link=wmediumd, wmediumd_mode=interference)
-        self.aps = []
-        self.hosts = []
         self.controller = self.net.addController('c1', controller=RemoteController, ip='127.0.0.1', port=6654)
-        self.node_num = node_num
+        self.node_num = ap_number
+        self.ap_links = []
 
-    def get_ap_list(self):
-        return self.aps
-    def get_host_list(self):
-        return self.hosts
+    def _get_adjacency(self):
+        self.nodes_dict = {}
+        for dpid in self.aps.keys():
+            x, y, _ = self.aps[dpid].position
+            self.nodes_dict[dpid] = (x, y)
+
+        self.adjs = get_adjacency(nodes_dict=self.nodes_dict, signal_range=self.signal_range)
+
+    def update_ap_links(self):
+        self._get_adjacency()
+        print(self.adjs)
+        for k, vs in self.adjs.items():
+            links = [{"src_dpid": k, "dst_dpid": v, "port_no": 2} for v in vs ]
+            self.ap_links = self.ap_links + links
     
     def add_nodes_batch(self):
         """ A Node is [AP + Host] """
@@ -30,29 +40,16 @@ class MyNet(MyNetBase):
         opt_params['min_v'] = 0.5
         opt_params['max_v'] = 0.9
 
-        for i in range(1, self.node_num+1):
-            host_mac = next_mac("host", i)
-            ap_mac = next_mac("ap", i)
-            h = self.net.addHost('h%d' % i, mac=host_mac)
-            info(f"*** Creating Host with MAC {host_mac} \n")
-            ap = self.net.addAccessPoint('ap%d' % i, wlans=3, ssid='ssid%d' % i, mac=ap_mac, **opt_params)
-
-            self.aps.append(ap)
-            self.hosts.append(h)
+        for _ in range(1, self.node_num+1):
+            dpid, _ = self.add_ap(wlans=3, **opt_params)
+            self.add_host(dpid)
 
     def add_links_batch(self):
         """ Link ap and host """
-        if len(self.aps) != len(self.hosts):
-            exit("Number of aps should be same as hosts")
-
-        for i in range(0, len(self.aps)):
-            self.net.addLink(self.aps[i], self.hosts[i])
-            self.net.addLink(self.aps[i], intf=f'ap{i+1}-wlan2', cls=mesh, ssid='mesh-ssid1', channel=5)
-            self.port_to_mesh[f'ap{i+1}-wlan2'] = 'mesh-ssid1'
-
-    def start_aps(self):
-        for ap in self.aps:
-            ap.start([self.controller])
+        for dpid in self.aps.keys():
+            self.net.addLink(self.aps[dpid], self.hosts[dpid][0])
+            self.net.addLink(self.aps[dpid], intf=f'{self.aps[dpid].name}-wlan2', cls=mesh, ssid='mesh-centerless', channel=5)
+            self.port_to_mesh[f'{self.aps[dpid].name}-wlan2'] = 'mesh-centerless'
 
     def config(self):
         info("*** Creating nodes\n")
@@ -75,6 +72,9 @@ class MyNet(MyNetBase):
         self.net.build()
         self.controller.start()
         self.start_aps()
+        if hasattr(self, "update_ap_links"):
+            print("Has method update_ap_links")
+        self.update_ap_links()
 
     def cli(self):
         info("*** Running CLI\n")

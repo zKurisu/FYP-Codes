@@ -1,7 +1,6 @@
 import math
 import random
 from collections import deque
-from utils.find_MCDS import find_mcds, draw_graph
 
 def generate_connected_udg(
     n: int,               # 节点数量 (必须 >=1)
@@ -103,3 +102,6 @@ def is_connected(adjacency: dict) -> bool:
                 queue.append(neighbor)
     return len(visited) == len(adjacency)
 
+if __name__ == "__main__":
+    nodes_dict, _ = generate_connected_udg(n=5, signal_range=31.4842544)
+    print(nodes_dict)
