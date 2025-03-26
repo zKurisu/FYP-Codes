@@ -28,7 +28,7 @@ from ryu.topology import event
 import httpx
 import re
 import networkx as nx
-import time
+import threading
 from mygrpc.python.apcontrol.apcontrol_client import run as rpcClientRun
 from mygrpc.python.apcontrol.apcontrol_client import getAPLinks as rpcGetAPLinks
 
@@ -55,6 +55,7 @@ class SimpleSwitch13(app_manager.RyuApp):
                     '10.0.0.8':'00:00:00:00:00:08',
                     '10.0.0.9':'00:00:00:00:00:09',
                     '10.0.0.10':'00:00:00:00:00:0a'}
+        threading.Timer(5, function=self.update_links).start()
 
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
@@ -164,25 +165,28 @@ class SimpleSwitch13(app_manager.RyuApp):
             print("%s in self.net" % dst)
             print(self.net.edges(data=True))
 
-            path = nx.shortest_path(self.net, src, dst)
-            next_match = parser.OFPMatch(eth_dst=dst)
-            back_match = parser.OFPMatch(eth_dst=src)
-            print(f"Path is: {path}")
+            try:
+                path = nx.shortest_path(self.net, src, dst)
+                next_match = parser.OFPMatch(eth_dst=dst)
+                back_match = parser.OFPMatch(eth_dst=src)
+                print(f"Path is: {path}")
 
-            for on_path_switch in range(1, len(path)-1):
-                now_switch = path[on_path_switch]
-                next_switch = path[on_path_switch+1]
-                back_switch = path[on_path_switch-1]
-                print(self.net[now_switch][next_switch])
-                print(self.net[now_switch][back_switch])
-                next_port = self.net[now_switch][next_switch]['port_no']
-                back_port = self.net[now_switch][back_switch]['port_no']
-                actions = [parser.OFPActionOutput(next_port)]
-                self.add_flow(datapath=self.switch_map[now_switch], match=next_match, actions=actions, priority=1)
-                
-                actions = [parser.OFPActionOutput(back_port)]
-                self.add_flow(datapath=self.switch_map[now_switch], match=back_match, actions=actions, priority=1)
-                print("now switch:%s" % now_switch)
+                for on_path_switch in range(1, len(path)-1):
+                    now_switch = path[on_path_switch]
+                    next_switch = path[on_path_switch+1]
+                    back_switch = path[on_path_switch-1]
+                    print(self.net[now_switch][next_switch])
+                    print(self.net[now_switch][back_switch])
+                    next_port = self.net[now_switch][next_switch]['port_no']
+                    back_port = self.net[now_switch][back_switch]['port_no']
+                    actions = [parser.OFPActionOutput(next_port)]
+                    self.add_flow(datapath=self.switch_map[now_switch], match=next_match, actions=actions, priority=1)
+                    
+                    actions = [parser.OFPActionOutput(back_port)]
+                    self.add_flow(datapath=self.switch_map[now_switch], match=back_match, actions=actions, priority=1)
+                    print("now switch:%s" % now_switch)
+            except nx.NetworkXNoPath:
+                print(f"No path between {src} and {dst}")
         else:
             out_port = ofproto.OFPP_FLOOD
             actions = [parser.OFPActionOutput(out_port)]
@@ -363,6 +367,16 @@ class SimpleSwitch13(app_manager.RyuApp):
 
         self.send_packet(dp, port, pkt)
 
+    def update_links(self):
+        self.net.clear_edges()
+        response = rpcGetAPLinks()
+        links = response.ap_links
+        for link in links:
+            if self.net.has_edge(link.src_dpid, link.dst_dpid):
+                continue
+            else:
+                self.net.add_edge(link.src_dpid, link.dst_dpid, port_no=link.port_no)
+        print(f"Edges: {self.net.edges(data=True)}")
 
 def print_flow_mod(mod, dpid):
     ofproto = mod.datapath.ofproto
