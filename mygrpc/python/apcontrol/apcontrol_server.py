@@ -11,16 +11,14 @@ class APControl(apcontrol_pb2_grpc.APControlServicer):
     def __init__(self, net):
         self.net = net
         self.aps = net.get_ap_list() # Place APs here
-        self.port_to_mesh = net.port_to_mesh # Place APs here
-        self.ap_links = net.ap_links
     def APConnectMesh(self, request, context):
         ... # Do AP Connect Mesh
         ... # If OK
         for ap in self.aps:
             if ap.dpid == request.dpid:
-                if self.port_to_mesh.get(request.portName) != None:
-                    ap.cmd(f"iw dev {request.portName} mesh join {self.port_to_mesh[request.portName]}")
-                    print(f"{ap.name} Run: iw dev {request.portName} mesh join {self.port_to_mesh[request.portName]}")
+                if self.net.port_to_mesh.get(request.portName) != None:
+                    ap.cmd(f"iw dev {request.portName} mesh join {self.net.port_to_mesh[request.portName]}")
+                    print(f"{ap.name} Run: iw dev {request.portName} mesh join {self.net.port_to_mesh[request.portName]}")
                 else:
                     print("No mesh ssid in port to mesh table")
         
@@ -30,10 +28,10 @@ class APControl(apcontrol_pb2_grpc.APControlServicer):
     def GetAPLinks(self, request, context):
         if hasattr(self.net, "update_ap_links"):
             self.net.update_ap_links()
-        print("Return links")
+            print("Update ap links...")
         # 将 APLinks 数据转换为 APLinks 消息
         ap_links_response = apcontrol_pb2.APLinksResponse()
-        for ap_link in self.ap_links:
+        for ap_link in self.net.ap_links:
             ap_links_response.ap_links.append(
                 apcontrol_pb2.APLinks(
                     src_dpid=ap_link["src_dpid"],

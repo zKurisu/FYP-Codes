@@ -368,15 +368,19 @@ class SimpleSwitch13(app_manager.RyuApp):
         self.send_packet(dp, port, pkt)
 
     def update_links(self):
-        self.net.clear_edges()
+        edges_to_remove = [
+            (src, dst) for src, dst in self.net.edges
+            if (not str(src).startswith("00")) and (not str(dst).startswith("00"))
+        ]
+        self.net.remove_edges_from(edges_to_remove)
         response = rpcGetAPLinks()
         links = response.ap_links
+        print(f"Links from Mininet: {links}")
         for link in links:
-            if self.net.has_edge(link.src_dpid, link.dst_dpid):
-                continue
-            else:
-                self.net.add_edge(link.src_dpid, link.dst_dpid, port_no=link.port_no)
-        print(f"Edges: {self.net.edges(data=True)}")
+            self.net.add_edge(link.src_dpid, link.dst_dpid, port_no=link.port_no)
+
+        threading.Timer(5, function=self.update_links).start()
+        print("Timer run...")
 
 def print_flow_mod(mod, dpid):
     ofproto = mod.datapath.ofproto

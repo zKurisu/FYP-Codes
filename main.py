@@ -18,9 +18,9 @@ def run(mynet):
     send_apInfo(aps)
 
     ###### GRPC
-    # r1 = APCrpcserver(mynet)
-    # rpcthread = threading.Thread(target=r1.run, name="rpcServer")
-    # rpcthread.start()
+    r1 = APCrpcserver(mynet)
+    rpcthread = threading.Thread(target=r1.run, name="rpcServer")
+    rpcthread.start()
 
     ###### Prometheus
     #p1 = PrometheusClient(hosts[0], 11111)
@@ -34,8 +34,8 @@ def run(mynet):
     mynet.cli()
 
     ###### Clean
-    # r1.stop()
-    # rpcthread.join()
+    r1.stop()
+    rpcthread.join()
     #p1.clean()
     #pthread.join()
     mynet.stop()

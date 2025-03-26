@@ -19,16 +19,18 @@ class MyNet(MyNetBase):
         self.ap_links = []
 
     def _get_adjacency(self):
+        self.adjs = {}
         self.nodes_dict = {}
         for dpid in self.aps.keys():
+            int_dpid = str(int(dpid, 16))
             x, y, _ = self.aps[dpid].position
-            self.nodes_dict[dpid] = (x, y)
+            self.nodes_dict[int_dpid] = (x, y)
 
         self.adjs = get_adjacency(nodes_dict=self.nodes_dict, signal_range=self.signal_range)
 
     def update_ap_links(self):
+        self.ap_links = []
         self._get_adjacency()
-        print(self.adjs)
         for k, vs in self.adjs.items():
             links = [{"src_dpid": k, "dst_dpid": v, "port_no": 2} for v in vs ]
             self.ap_links = self.ap_links + links

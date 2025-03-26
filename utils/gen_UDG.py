@@ -81,7 +81,6 @@ def generate_connected_udg(
         new_k = f"{0x10**15 + k}"
         new_v = [f"{0x10**15 + v}" for v in vs]
         new_adj_dict[new_k] = new_v
-        pass
     
     return dpid_nodes_dict, new_adj_dict
 
