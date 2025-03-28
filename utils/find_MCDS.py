@@ -77,7 +77,6 @@ def get_adjacency(nodes_dict, signal_range):
             x2, y2 = nodes_dict[id2]
             distance = ((x1 - x2)**2 + (y1 - y2)**2)**0.5
             if distance <= signal_range:
-                print(f"Distance is {distance}")
                 adj[id1].append(id2)
                 adj[id2].append(id1)
     return adj
