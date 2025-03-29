@@ -81,16 +81,17 @@ function make_content_list(items) {
             childDiv = drawGraph(data.nodes, data.edges);
           } else if (data.type == "flowTable") {
             console.log("I should make a flowTable here")
-            childDiv = drawFlowTable(data.total_entities);
+            console.debug(data["total_entities"])
+            childDiv = drawFlowTable(data["total_entities"]);
           } else if (data.type == "statistics") {
             console.log("I should make a statistics here")
-            childDiv = drawStatisticsTable(data.total_statistics);
+            childDiv = drawStatisticsTable(data["total_statistics"]);
           } else if (data.type == "portInfo") {
             console.log("I should make a portInfo here")
-            childDiv = drawPortInfoTable(data.total_port_infos);
+            childDiv = drawPortInfoTable(data["total_port_infos"]);
           } else if (data.type == "macToPortTable") {
             console.log("I should make a macToPortTable here")
-            childDiv = drawMacToPortTable(data.total_mac_to_port);
+            childDiv = drawMacToPortTable(data["total_mac_to_port"]);
           }
 
           displayBox.appendChild(childDiv);

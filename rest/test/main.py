@@ -46,27 +46,21 @@ def get_topology():
 # 一行一行字符串返回?
 @app.get("/flowTable/current")
 def get_current_flow_table():
-    total_entities = [
-        {
-            "dpid": "10001",
-            "entities": [
-                "flow entities 1",
-                "flow entities 2",
-                "flow entities 3",
-                "flow entities 4",
-            ],
-        },
-        {
-            "dpid": "10001",
-            "entities": [
-                "flow entities 1",
-                "flow entities 2",
-                "flow entities 3",
-                "flow entities 4",
-            ],
-        }
-    ]
-
+    total_entities = {
+        "10001": [
+            "flow entities 1",
+            "flow entities 2",
+            "flow entities 3",
+            "flow entities 4",
+        ],
+        "10002": [
+            "flow entities 1",
+            "flow entities 2",
+            "flow entities 3",
+            "flow entities 4",
+        ],
+    }
+    
     response_content = json.dumps({
         "total_entities": total_entities,
         "type": "flowTable"
@@ -77,26 +71,20 @@ def get_current_flow_table():
 # 一行一行字符串返回?
 @app.get("/flowTable/history")
 def get_hostory_flow_table():
-    total_entities = [
-        {
-            "dpid": "10001",
-            "entities": [
-                "flow entities 1",
-                "flow entities 2",
-                "flow entities 3",
-                "flow entities 4",
-            ],
-        },
-        {
-            "dpid": "10002",
-            "entities": [
-                "flow entities 1",
-                "flow entities 2",
-                "flow entities 3",
-                "flow entities 4",
-            ],
-        }
-    ]
+    total_entities = {
+        "10001": [
+            "flow entities 1",
+            "flow entities 2",
+            "flow entities 3",
+            "flow entities 4",
+        ],
+        "10002": [
+            "flow entities 1",
+            "flow entities 2",
+            "flow entities 3",
+            "flow entities 4",
+        ],
+    }
 
     response_content = json.dumps({
         "total_entities": total_entities,
@@ -148,28 +136,23 @@ def get_statistics():
 # 
 @app.get("/portInfo")
 def get_port_info():
-    total_port_infos = [
-        {
-            "dpid": "10001",
-            "port_info": [
-                {
-                    "port_no": 1,
-                    "port_name": "eth1",
-                    "mac": "00:00:00:00:00:01",
-                }
-            ],
-        },
-        {
-            "dpid": "10002",
-            "port_info": [
-                {
-                    "port_no": 2,
-                    "port_name": "eth2",
-                    "mac": "00:00:00:00:00:02",
-                }
-            ],
-        },
-    ]
+    total_port_infos = {
+        "10001": [
+            {
+                "port_no": 1,
+                "port_name": "eth1",
+                "mac": "00:00:00:00:00:01",
+            }
+        ],
+        "10002": [
+            {
+                "port_no": 2,
+                "port_name": "eth2",
+                "mac": "00:00:00:00:00:02",
+            }
+        ],
+    }
+
     response_content = json.dumps({
         "total_port_infos": total_port_infos,
         "type": "portInfo"
