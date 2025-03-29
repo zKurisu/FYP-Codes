@@ -84,20 +84,28 @@ def get_hostory_flow_table():
     total_entities = {
         "10001": [
             {
-                "in_port": 0,
-                "eth_dst": "00:00:00:00:00:01",
-                "out_port": 3,
-                "packet_count": 100,
-                "byte_count": 1000
+                "priority": 1,
+                "match": "match string",
+                "instruction": "instruction string",
+                "buffer_id": 0,
+                "command": "ADD",
+                "idel_timeout": 100,
+                "hard_timeout": 300,
+                "cookie": "cookie string",
+                "flags": 1
             },
         ],
         "10002": [
             {
-                "in_port": 0,
-                "eth_dst": "00:00:00:00:00:01",
-                "out_port": 3,
-                "packet_count": 100,
-                "byte_count": 1000
+                "priority": 1,
+                "match": "match string",
+                "instruction": "instruction string",
+                "buffer_id": 0,
+                "command": "ADD",
+                "idel_timeout": 100,
+                "hard_timeout": 300,
+                "cookie": "cookie string",
+                "flags": 1
             },
         ],
     }
