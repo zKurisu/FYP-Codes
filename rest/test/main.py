@@ -73,7 +73,7 @@ def get_current_flow_table():
     
     response_content = json.dumps({
         "total_entities": total_entities,
-        "type": "flowTable"
+        "type": "flowTableCurrent"
         })
     return Response(response_content)
 
@@ -104,7 +104,7 @@ def get_hostory_flow_table():
 
     response_content = json.dumps({
         "total_entities": total_entities,
-        "type": "flowTable"
+        "type": "flowTableHistory"
         })
     return Response(response_content)
 

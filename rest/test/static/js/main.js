@@ -1,4 +1,5 @@
-import { drawFlowTable } from "./flowTable.js"
+import { drawFlowTableCurrent } from "./flowTableCurrent.js"
+import { drawFlowTableHistory } from "./flowTableHistory.js"
 import { drawGraph } from "./graph.js"
 import { drawMacToPortTable } from "./macToPortTable.js"
 import { drawPortInfoTable } from "./portInfo.js"
@@ -79,10 +80,14 @@ function make_content_list(items) {
           if (data.type == "graph") {
             console.log("I should draw a graph here")
             childDiv = drawGraph(data.nodes, data.edges);
-          } else if (data.type == "flowTable") {
-            console.log("I should make a flowTable here")
+          } else if (data.type == "flowTableCurrent") {
+            console.log("I should make a flowTableCurrent here")
             console.debug(data["total_entities"])
-            childDiv = drawFlowTable(data["total_entities"]);
+            childDiv = drawFlowTableCurrent(data["total_entities"]);
+          } else if (data.type == "flowTableHistory") {
+            console.log("I should make a flowTableHistory here")
+            console.debug(data["total_entities"])
+            childDiv = drawFlowTableHistory(data["total_entities"]);
           } else if (data.type == "statistics") {
             console.log("I should make a statistics here")
             childDiv = drawStatisticsTable(data["total_statistics"]);

@@ -1,4 +1,4 @@
-export function drawFlowTable(total_flow_entities) {
+export function drawFlowTableCurrent(total_flow_entities) {
   console.debug("Draw flow table begin");
   const div = document.createElement('div');
   const title = document.createElement('h1');

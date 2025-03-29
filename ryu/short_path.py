@@ -66,7 +66,8 @@ class RestAPIController(ControllerBase):
     @add_CROS_header
     def _get_flow_table_history(self, req):
         json_data = json.dumps({
-            "hello": "flow table history"
+            "total_entities": self.simple_switch_app.switch_flow_history,
+            "type": "flowTableHistory"
         }).encode('utf-8')
         return Response(content_type="application/json", body=json_data)
     
@@ -75,7 +76,7 @@ class RestAPIController(ControllerBase):
     def _get_flow_table_current(self, req):
         json_data = json.dumps({
             "total_entities": self.simple_switch_app.switch_flow_entities,
-            "type": "flowTable"
+            "type": "flowTableCurrent"
         }).encode('utf-8')
         return Response(content_type="application/json", body=json_data)
     
@@ -116,6 +117,7 @@ class SimpleSwitch13(app_manager.RyuApp):
         self.switch_map = {}
         self.switch_statistics = {}
         self.switch_flow_entities = {}
+        self.switch_flow_history = {}
         self.switch_port_info = {}
         self.count = 0
         self.topology_api_app = self
@@ -237,7 +239,7 @@ class SimpleSwitch13(app_manager.RyuApp):
                                     match=match, instructions=inst)
         
         hex_dpid = format(datapath.id, "x")
-        print_flow_mod(mod, hex_dpid)
+        self.print_flow_mod(mod, hex_dpid)
         datapath.send_msg(mod)
 
     @set_ev_cls(ofp_event.EventOFPPortDescStatsReply, MAIN_DISPATCHER)
@@ -465,7 +467,7 @@ class SimpleSwitch13(app_manager.RyuApp):
         )
 
         # 发送消息
-        print_flow_mod(flow_mod, hex_dpid)
+        self.print_flow_mod(flow_mod, hex_dpid)
         datapath.send_msg(flow_mod)
         self.logger.info(f"Deleted flows with match: {match}")
 	
@@ -529,47 +531,49 @@ class SimpleSwitch13(app_manager.RyuApp):
         threading.Timer(5, function=self.update_links).start()
         print("Timer run...")
 
-def print_flow_mod(mod, dpid):
-    ofproto = mod.datapath.ofproto
-    parser = mod.datapath.ofproto_parser
+    def print_flow_mod(self, mod, dpid):
+        ofproto = mod.datapath.ofproto
+        parser = mod.datapath.ofproto_parser
 
-    # 构建要发送的数据
-    print(f"print_flow_mode: {dpid}\n")
-    flow_data = {
-        "datapath_id": dpid,
-        "priority": mod.priority,
-        "match": str(mod.match),
-        "instructions": str(mod.instructions),
-        "buffer_id": mod.buffer_id if mod.buffer_id != ofproto.OFP_NO_BUFFER else None,
-        "command": None,
-        "idle_timeout": mod.idle_timeout if mod.idle_timeout != 0 else None,
-        "hard_timeout": mod.hard_timeout if mod.hard_timeout != 0 else None,
-        "cookie": mod.cookie if mod.cookie != 0 else None,
-        "flags": mod.flags if mod.flags != 0 else None,
-    }
+        # 构建要发送的数据
+        print(f"print_flow_mode: {dpid}\n")
+        flow_data = {
+            "datapath_id": dpid,
+            "priority": mod.priority,
+            "match": str(mod.match),
+            "instructions": str(mod.instructions),
+            "buffer_id": mod.buffer_id if mod.buffer_id != ofproto.OFP_NO_BUFFER else None,
+            "command": None,
+            "idle_timeout": mod.idle_timeout if mod.idle_timeout != 0 else None,
+            "hard_timeout": mod.hard_timeout if mod.hard_timeout != 0 else None,
+            "cookie": mod.cookie if mod.cookie != 0 else None,
+            "flags": mod.flags if mod.flags != 0 else None,
+        }
 
-    # 设置 command 字段
-    if mod.command == ofproto.OFPFC_ADD:
-        flow_data["command"] = "ADD"
-    elif mod.command == ofproto.OFPFC_MODIFY:
-        flow_data["command"] = "MODIFY"
-    elif mod.command == ofproto.OFPFC_DELETE:
-        flow_data["command"] = "DELETE"
-    else:
-        flow_data["command"] = str(mod.command)
+        # 设置 command 字段
+        if mod.command == ofproto.OFPFC_ADD:
+            flow_data["command"] = "ADD"
+        elif mod.command == ofproto.OFPFC_MODIFY:
+            flow_data["command"] = "MODIFY"
+        elif mod.command == ofproto.OFPFC_DELETE:
+            flow_data["command"] = "DELETE"
+        else:
+            flow_data["command"] = str(mod.command)
 
-    # 发送 POST 请求
-    fastapi_url = "http://127.0.0.1:8000/process_flow"  # FastAPI 程序的 URL
-    try:
-        with httpx.Client() as client:
-            response = client.post(fastapi_url, json=flow_data)
-            if response.status_code == 200:
-                pass
-                # print("Flow data successfully sent to FastAPI.")
-            else:
-                print(f"Failed to send flow data. Status code: {response.status_code}")
-    except Exception as e:
-        print(f"Error sending POST request: {e}")
+        self.switch_flow_history.setdefault(dpid, [])
+        self.switch_flow_history[dpid].append(flow_data)
+        # 发送 POST 请求
+        fastapi_url = "http://127.0.0.1:8000/process_flow"  # FastAPI 程序的 URL
+        try:
+            with httpx.Client() as client:
+                response = client.post(fastapi_url, json=flow_data)
+                if response.status_code == 200:
+                    pass
+                    # print("Flow data successfully sent to FastAPI.")
+                else:
+                    print(f"Failed to send flow data. Status code: {response.status_code}")
+        except Exception as e:
+            print(f"Error sending POST request: {e}")
 
 def print_mac_to_port(mac_to_port):
     # 发送 POST 请求
