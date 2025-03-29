@@ -75,7 +75,7 @@ function make_content_list(items) {
       fetchData(items[key])
         .then(data => {
           // 可以在这里处理返回的数据
-          const childDiv = null;
+          let childDiv = null;
           if (data.type == "graph") {
             console.log("I should draw a graph here")
             childDiv = drawGraph(data.nodes, data.edges);
@@ -96,7 +96,10 @@ function make_content_list(items) {
           displayBox.appendChild(childDiv);
         })
         .catch(error => {
-          // 错误处理逻辑
+          console.error("Fetch error:", error);
+          const errorDiv = document.createElement('div');
+          errorDiv.textContent = "Error loading data";
+          displayBox.appendChild(errorDiv);
         });
     });
 
