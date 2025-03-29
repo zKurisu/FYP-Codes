@@ -31,12 +31,12 @@ def main_page(request: Request):
 # ]
 @app.get("/topology")
 def get_topology():
-    node_list = ["node1", "node2", "node3", "node4"]
+    node_list = ["10000000000000001", "10000000000000002", "10000000000000003", "10000000000000004"]
 
     edge_list = [
-        ("node2", "node1"),
-        ("node3", "node1"),
-        ("node4", "node1"),
+        ("10000000000000002", "10000000000000001"),
+        ("10000000000000003", "10000000000000001"),
+        ("10000000000000004", "10000000000000001"),
     ]
 
     response_content = json.dumps({
