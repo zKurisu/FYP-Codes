@@ -20,6 +20,10 @@
       </div>
     </div>
     <script src="/static/js/main.js"></script>
-    <script>hello({{ ryu_wsgi | tojson }})</script>
+    <script>
+      const ryu_wsgi = {{ ryu_wsgi | tojson }};
+      hello(ryu_wsgi);
+      main(ryu_wsgi);
+    </script>
   </body>
 </html>

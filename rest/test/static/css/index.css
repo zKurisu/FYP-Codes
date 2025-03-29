@@ -17,6 +17,10 @@
     margin: 10px;
 }
 
+.content-list li {
+  cursor: pointer;
+}
+
 .content-display-box {
     margin: 10px;
     background-color: yellow;
