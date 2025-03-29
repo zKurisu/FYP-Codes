@@ -11,22 +11,23 @@ export function drawGraph(node_list, edge_list) {
   title.textContent = "Graph";
   container.appendChild(title);
 
-  // 创建图表区域（确保title和图表分开）
+  // 创建图表区域
   const graphContainer = document.createElement('div');
   graphContainer.style.width = '100%';
   graphContainer.style.height = 'calc(100% - 40px)';
   container.appendChild(graphContainer);
 
-  // 转换数据格式
+  // 转换节点数据格式
   const visNodes = node_list.map((node, index) => ({
     id: node,
     label: node,
     color: index === 0 ? "#FF5733" : "#2ECC71",
   }));
 
+  // 转换边数据格式（适配Python的元组结构）
   const visEdges = edge_list.map(edge => ({
-    from: edge.src,
-    to: edge.dst,
+    from: edge[0],  // 第一个元素是src
+    to: edge[1],    // 第二个元素是dst
     arrows: "to",
   }));
 
@@ -38,7 +39,7 @@ export function drawGraph(node_list, edge_list) {
     width: '100%'
   };
 
-  // 确保vis已全局可用（或在模块中导入）
+  // 确保vis已全局可用
   if (typeof vis !== 'undefined') {
     new vis.Network(graphContainer, data, options);
   } else {

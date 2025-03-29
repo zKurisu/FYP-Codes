@@ -35,41 +35,65 @@ from webob import Response
 from mygrpc.python.apcontrol.apcontrol_client import run as rpcClientRun
 from mygrpc.python.apcontrol.apcontrol_client import getAPLinks as rpcGetAPLinks
 
+def add_CROS_header(method):
+    def wrapper(*args, **kwargs):
+        response = method(*args, **kwargs)
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+        return response
+    return wrapper
+
 class RestAPIController(ControllerBase):
     def __init__(self, req, link, data, **config):
         super(RestAPIController, self).__init__(req, link, data, **config)
+        self.simple_switch_app = data['simple_switch_app']
     
     @route("Topology", "/topology", methods=['GET'])
+    @add_CROS_header
     def _get_topo(self, req):
         json_data = json.dumps({
-            "hello": "topology"
+            "nodes": list(self.simple_switch_app.net.nodes),
+            "edges": list(self.simple_switch_app.net.edges),
+            "type": "graph"
         }).encode('utf-8')
-        return Response(content_type="application/json", body=json_data)
+        response = Response(content_type="application/json", body=json_data)
+        return response
+    
     @route("Flow table history", "/flowTable/history", methods=['GET'])
+    @add_CROS_header
     def _get_flow_table_history(self, req):
         json_data = json.dumps({
             "hello": "flow table history"
         }).encode('utf-8')
         return Response(content_type="application/json", body=json_data)
+    
     @route("Flow table current", "/flowTable/current", methods=['GET'])
+    @add_CROS_header
     def _get_flow_table_current(self, req):
         json_data = json.dumps({
             "hello": "flow table current"
         }).encode('utf-8')
         return Response(content_type="application/json", body=json_data)
+    
     @route("Mac to port table", "/macToPortTable", methods=['GET'])
+    @add_CROS_header
     def _get_mac_to_port(self, req):
         json_data = json.dumps({
             "hello": "mac to port table"
         }).encode('utf-8')
         return Response(content_type="application/json", body=json_data)
+    
     @route("Port info", "/portInfo", methods=['GET'])
+    @add_CROS_header
     def _get_port_info(self, req):
         json_data = json.dumps({
             "hello": "port info"
         }).encode('utf-8')
         return Response(content_type="application/json", body=json_data)
+    
     @route("statistics", "/statistics", methods=['GET'])
+    @add_CROS_header
     def _get_statistics(self, req):
         json_data = json.dumps({
             "hello": "statistics"

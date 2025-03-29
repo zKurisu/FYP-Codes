@@ -1,9 +1,11 @@
 from fastapi import FastAPI, Request, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+
 import json
 
 app = FastAPI()
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 templates = Jinja2Templates(directory="templates")
@@ -14,7 +16,7 @@ def main_page(request: Request):
         "index.html",
         {
             "request": request,
-            "ryu_wsgi": "http://127.0.0.1:8000"
+            "ryu_wsgi": "http://192.168.1.109:8080/"
         }
     )
     
@@ -30,9 +32,9 @@ def get_topology():
     node_list = ["node1", "node2", "node3", "node4"]
 
     edge_list = [
-        {"src": "node2", "dst": "node1"},
-        {"src": "node3", "dst": "node1"},
-        {"src": "node4", "dst": "node1"},
+        ("node2", "node1"),
+        ("node3", "node1"),
+        ("node4", "node1"),
     ]
 
     response_content = json.dumps({
