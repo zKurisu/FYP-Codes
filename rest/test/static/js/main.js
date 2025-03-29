@@ -1,3 +1,9 @@
+import { drawFlowTable } from "./flowTable.js"
+import { drawGraph } from "./graph.js"
+import { drawMacToPortTable } from "./macToPortTable.js"
+import { drawPortInfoTable } from "./portInfo.js"
+import { drawStatisticsTable } from "./statistics.js"
+
 const headerList = {"Prometheus": "http://127.0.0.1:5000"};
 const contentList = {
   "Topology": "/topology",
@@ -8,11 +14,11 @@ const contentList = {
   "Statistics": "/statistics",
 };
 
-function hello(name) {
+export function hello(name) {
   console.log(`Oh My ${name}`);
 }
 
-function main(wsgi) {
+export function main(wsgi) {
   const baseUrl = wsgi.endsWith('/') ? wsgi.slice(0, -1) : wsgi;
   const headerDiv = document.getElementsByClassName("page-header")[0];
   const headerUl = make_ref_list(headerList);
@@ -68,8 +74,14 @@ function make_content_list(items) {
           // 可以在这里处理返回的数据
           if (data.type == "graph") {
             console.log("I should draw a graph here")
-          } else if (data.type == "table") {
-            console.log("I should make a table here")
+          } else if (data.type == "flowTable") {
+            console.log("I should make a flowTable here")
+          } else if (data.type == "statistics") {
+            console.log("I should make a statistics here")
+          } else if (data.type == "portInfo") {
+            console.log("I should make a portInfo here")
+          } else if (data.type == "macToPortTable") {
+            console.log("I should make a macToPortTable here")
           }
         })
         .catch(error => {

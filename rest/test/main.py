@@ -69,7 +69,7 @@ def get_current_flow_table():
 
     response_content = json.dumps({
         "total_entities": total_entities,
-        "type": "table"
+        "type": "flowTable"
         })
     return Response(response_content)
 
@@ -100,7 +100,7 @@ def get_hostory_flow_table():
 
     response_content = json.dumps({
         "total_entities": total_entities,
-        "type": "table"
+        "type": "flowTable"
         })
     return Response(response_content)
 
@@ -140,7 +140,7 @@ def get_statistics():
     ]
     response_content = json.dumps({
         "total_statistics": total_statistics,
-        "type": "table"
+        "type": "statistics"
         })
     return Response(response_content)
 
@@ -172,7 +172,7 @@ def get_port_info():
     ]
     response_content = json.dumps({
         "total_port_infos": total_port_infos,
-        "type": "table"
+        "type": "portInfo"
         })
     return Response(response_content)
 
@@ -192,7 +192,7 @@ def get_mac_to_port_table():
     }
 
     response_content = json.dumps({
-        "type": "table"
+        "type": "macToPortTable"
         })
     return Response(response_content)
 
