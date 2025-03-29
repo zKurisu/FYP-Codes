@@ -7,46 +7,44 @@ export function drawStatisticsTable(total_statistics) {
   title.textContent = "Statistics Table";
   div.appendChild(title);
 
-  // 创建表格
-  const table = document.createElement('table');
-  table.style.width = '100%';
-  table.style.borderCollapse = 'collapse';
-  table.style.marginTop = '20px';
-  
-  // 创建表头
-  const thead = document.createElement('thead');
-  const headerRow = document.createElement('tr');
-  
-  // 添加表头列
-  const headers = [
-    'Switch ID', 'Port', 'RX Packets', 'RX Bytes', 'RX Errors',
-    'TX Packets', 'TX Bytes', 'TX Errors'
-  ];
-  
-  headers.forEach(headerText => {
-    const th = document.createElement('th');
-    th.textContent = headerText;
-    th.style.border = '1px solid #ddd';
-    th.style.padding = '8px';
-    th.style.textAlign = 'left';
-    th.style.backgroundColor = '#f2f2f2';
-    headerRow.appendChild(th);
-  });
-  
-  thead.appendChild(headerRow);
-  table.appendChild(thead);
-
-  // 创建表格内容
-  const tbody = document.createElement('tbody');
-  
-  // 遍历统计数据
+  // 遍历每个交换机的统计数据
   Object.entries(total_statistics).forEach(([dpid, portStatsArray]) => {
+    // 为每个交换机创建标题
+    const dpidTitle = document.createElement('h3');
+    dpidTitle.textContent = `Switch ${dpid}`;
+    div.appendChild(dpidTitle);
+
+    // 创建当前交换机的统计表格
+    const table = document.createElement('table');
+    
+    // 创建表头
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    
+    // 添加表头列（移除了Switch ID列，因为已经在标题中显示）
+    const headers = [
+      'Port', 'RX Packets', 'RX Bytes', 'RX Errors',
+      'TX Packets', 'TX Bytes', 'TX Errors'
+    ];
+    
+    headers.forEach(headerText => {
+      const th = document.createElement('th');
+      th.textContent = headerText;
+      headerRow.appendChild(th);
+    });
+    
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    // 创建表格内容
+    const tbody = document.createElement('tbody');
+    
+    // 遍历当前交换机的端口统计数据
     portStatsArray.forEach(portStats => {
       const row = document.createElement('tr');
       
       // 添加单元格数据
       const cells = [
-        dpid,
         portStats.port_no,
         portStats.rx_packets,
         portStats.rx_bytes,
@@ -59,17 +57,19 @@ export function drawStatisticsTable(total_statistics) {
       cells.forEach(cellData => {
         const td = document.createElement('td');
         td.textContent = cellData;
-        td.style.border = '1px solid #ddd';
-        td.style.padding = '8px';
         row.appendChild(td);
       });
       
       tbody.appendChild(row);
     });
+    
+    table.appendChild(tbody);
+    div.appendChild(table);
+
+    // 添加分隔线
+    const separator = document.createElement('hr');
+    div.appendChild(separator);
   });
-  
-  table.appendChild(tbody);
-  div.appendChild(table);
 
   console.debug("Return drawed statistics table");
   return div;

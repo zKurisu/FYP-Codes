@@ -19,6 +19,21 @@ export function hello(name) {
   console.log(`Oh My ${name}`);
 }
 
+const fetchData = async (url) => {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const json_data = await response.json();
+    console.log("Get: ", json_data);
+    return json_data;
+  } catch (error) {
+    console.error('Fetch error:', error);
+    throw error; // 可以选择重新抛出或处理错误
+  }
+};
+
 export function main(wsgi) {
   const baseUrl = wsgi.endsWith('/') ? wsgi.slice(0, -1) : wsgi;
   const headerDiv = document.getElementsByClassName("page-header")[0];
@@ -31,6 +46,26 @@ export function main(wsgi) {
   })
   const contentListUl = make_content_list(contentList);
   contentListDiv.appendChild(contentListUl);
+
+  const displayBox = document.getElementsByClassName("content-display-box")[0]
+  displayBox.innerHTML = "";
+  fetchData(contentList["Topology"])
+    .then(data => {
+      let childDiv = null;
+      if (data.type == "graph") {
+        console.log("I should draw a graph here");
+        childDiv = drawGraph(data.nodes, data.edges);
+      } else {
+        console.debug("Wrong type for init graph");
+      }
+      displayBox.appendChild(childDiv);
+    })
+    .catch(error => {
+      console.error("Fetch error:", error);
+      const errorDiv = document.createElement('div');
+      errorDiv.textContent = "Error loading data";
+      displayBox.appendChild(errorDiv);
+    });
 }
 
 function make_ref_list(items) {
@@ -49,20 +84,6 @@ function make_ref_list(items) {
 function make_content_list(items) {
   const ul = document.createElement('ul');
   
-  const fetchData = async (url) => {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const json_data = await response.json();
-      console.log("Get: ", json_data);
-      return json_data;
-    } catch (error) {
-      console.error('Fetch error:', error);
-      throw error; // 可以选择重新抛出或处理错误
-    }
-  };
 
   Object.keys(items).forEach(key => {
     const li = document.createElement('li');

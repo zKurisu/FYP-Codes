@@ -8,7 +8,7 @@ export function drawMacToPortTable(macToPortItems) {
   // 遍历每个 outer key (dpid)
   for (const dpid in macToPortItems) {
     // 创建 dpid Box 容器
-    console.debug(`DPID: ${dpid}`)
+    console.debug(`DPID: ${dpid}`);
     const dpidBox = document.createElement("div");
     dpidBox.classList.add("dpid-box");
 
@@ -19,30 +19,45 @@ export function drawMacToPortTable(macToPortItems) {
 
     // 创建表格
     const table = document.createElement("table");
+    
+    // 创建表头部分
+    const thead = document.createElement("thead");
+    const headerRow = document.createElement("tr");
+    
+    // 添加表头单元格
+    const headers = ["MAC Address", "Port Number"];
+    headers.forEach(headerText => {
+      const th = document.createElement("th");
+      th.textContent = headerText;
+      headerRow.appendChild(th);
+    });
+    
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
 
-    // 添加表头
-    const headerRow = table.insertRow();
-    const header1 = headerRow.insertCell();
-    header1.textContent = "Mac";
-    const header2 = headerRow.insertCell();
-    header2.textContent = "Port";
-
+    // 创建表格内容
+    const tbody = document.createElement("tbody");
+    
     // 添加表格内容
     for (const mac in macToPortItems[dpid]) {
-        const row = table.insertRow();
-        const cell1 = row.insertCell();
-        cell1.textContent = mac;
-        const cell2 = row.insertCell();
-        cell2.textContent = macToPortItems[dpid][mac];
+      const row = document.createElement("tr");
+      
+      const cell1 = document.createElement("td");
+      cell1.textContent = mac;
+      row.appendChild(cell1);
+      
+      const cell2 = document.createElement("td");
+      cell2.textContent = macToPortItems[dpid][mac];
+      row.appendChild(cell2);
+      
+      tbody.appendChild(row);
     }
-
-    // 将表格添加到 dpid Box 中
+    
+    table.appendChild(tbody);
     dpidBox.appendChild(table);
-
-    // 将 dpid Box 添加到容器中
     div.appendChild(dpidBox);
   }
 
   console.debug("Return drawed mac to port table");
-  return div
+  return div;
 }
