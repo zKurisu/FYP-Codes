@@ -1,0 +1,27 @@
+.page-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.page-header {
+    background-color: red;
+    margin: 10px;
+}
+
+.content-container {
+    display: flex;
+}
+
+.content-list {
+    background-color: green;
+    margin: 10px;
+}
+
+.content-list li {
+  cursor: pointer;
+}
+
+.content-display-box {
+    margin: 10px;
+    background-color: yellow;
+}

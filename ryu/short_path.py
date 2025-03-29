@@ -84,7 +84,8 @@ class RestAPIController(ControllerBase):
     @add_CROS_header
     def _get_mac_to_port(self, req):
         json_data = json.dumps({
-            "hello": "mac to port table"
+            "total_mac_to_port": self.simple_switch_app.mac_to_port,
+            "type": "macToPortTable"
         }).encode('utf-8')
         return Response(content_type="application/json", body=json_data)
     
@@ -562,18 +563,6 @@ class SimpleSwitch13(app_manager.RyuApp):
 
         self.switch_flow_history.setdefault(dpid, [])
         self.switch_flow_history[dpid].append(flow_data)
-        # 发送 POST 请求
-        fastapi_url = "http://127.0.0.1:8000/process_flow"  # FastAPI 程序的 URL
-        try:
-            with httpx.Client() as client:
-                response = client.post(fastapi_url, json=flow_data)
-                if response.status_code == 200:
-                    pass
-                    # print("Flow data successfully sent to FastAPI.")
-                else:
-                    print(f"Failed to send flow data. Status code: {response.status_code}")
-        except Exception as e:
-            print(f"Error sending POST request: {e}")
 
 def print_mac_to_port(mac_to_port):
     # 发送 POST 请求
