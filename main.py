@@ -15,7 +15,7 @@ def run(mynet):
     mynet.start()
 
     aps = mynet.get_ap_list()
-    send_apInfo(aps)
+    # send_apInfo(aps), Does not need this now
     # hosts = mynet.get_host_list()
 
     ###### GRPC
