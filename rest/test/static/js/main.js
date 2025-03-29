@@ -69,20 +69,31 @@ function make_content_list(items) {
     
     li.addEventListener('click', () => {
       console.log("Clicked: ", key);
+      console.log("Clear Box..." );
+      const displayBox = document.getElementsByClassName("content-display-box")[0]
+      displayBox.innerHTML = "";
       fetchData(items[key])
         .then(data => {
           // 可以在这里处理返回的数据
+          const childDiv = null;
           if (data.type == "graph") {
             console.log("I should draw a graph here")
+            childDiv = drawGraph(data.nodes, data.edges);
           } else if (data.type == "flowTable") {
             console.log("I should make a flowTable here")
+            childDiv = drawFlowTable(data.total_entities);
           } else if (data.type == "statistics") {
             console.log("I should make a statistics here")
+            childDiv = drawStatisticsTable(data.total_statistics);
           } else if (data.type == "portInfo") {
             console.log("I should make a portInfo here")
+            childDiv = drawPortInfoTable(data.total_port_infos);
           } else if (data.type == "macToPortTable") {
             console.log("I should make a macToPortTable here")
+            childDiv = drawMacToPortTable(data.total_mac_to_port);
           }
+
+          displayBox.appendChild(childDiv);
         })
         .catch(error => {
           // 错误处理逻辑

@@ -192,6 +192,7 @@ def get_mac_to_port_table():
     }
 
     response_content = json.dumps({
+        "total_mac_to_port": total_mac_to_port,
         "type": "macToPortTable"
         })
     return Response(response_content)
