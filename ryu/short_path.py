@@ -24,17 +24,61 @@ from ryu.lib.packet import ether_types
 from ryu.lib.packet import arp
 from ryu.topology.api import get_switch
 from ryu.topology import event
+from ryu.app.wsgi import WSGIApplication, ControllerBase, route
 
 import httpx
 import re
 import networkx as nx
 import threading
+import json
+from webob import Response
 from mygrpc.python.apcontrol.apcontrol_client import run as rpcClientRun
 from mygrpc.python.apcontrol.apcontrol_client import getAPLinks as rpcGetAPLinks
 
-
+class RestAPIController(ControllerBase):
+    def __init__(self, req, link, data, **config):
+        super(RestAPIController, self).__init__(req, link, data, **config)
+    
+    @route("Topology", "/topology", methods=['GET'])
+    def _get_topo(self, req):
+        json_data = json.dumps({
+            "hello": "topology"
+        }).encode('utf-8')
+        return Response(content_type="application/json", body=json_data)
+    @route("Flow table history", "/flowTable/history", methods=['GET'])
+    def _get_flow_table_history(self, req):
+        json_data = json.dumps({
+            "hello": "flow table history"
+        }).encode('utf-8')
+        return Response(content_type="application/json", body=json_data)
+    @route("Flow table current", "/flowTable/current", methods=['GET'])
+    def _get_flow_table_current(self, req):
+        json_data = json.dumps({
+            "hello": "flow table current"
+        }).encode('utf-8')
+        return Response(content_type="application/json", body=json_data)
+    @route("Mac to port table", "/macToPortTable", methods=['GET'])
+    def _get_mac_to_port(self, req):
+        json_data = json.dumps({
+            "hello": "mac to port table"
+        }).encode('utf-8')
+        return Response(content_type="application/json", body=json_data)
+    @route("Port info", "/portInfo", methods=['GET'])
+    def _get_port_info(self, req):
+        json_data = json.dumps({
+            "hello": "port info"
+        }).encode('utf-8')
+        return Response(content_type="application/json", body=json_data)
+    @route("statistics", "/statistics", methods=['GET'])
+    def _get_statistics(self, req):
+        json_data = json.dumps({
+            "hello": "statistics"
+        }).encode('utf-8')
+        return Response(content_type="application/json", body=json_data)
+    
 class SimpleSwitch13(app_manager.RyuApp):
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
+    _CONTEXTS = {'wsgi': WSGIApplication}
 
     def __init__(self, *args, **kwargs):
         super(SimpleSwitch13, self).__init__(*args, **kwargs)
@@ -57,6 +101,8 @@ class SimpleSwitch13(app_manager.RyuApp):
                     '10.0.0.10':'00:00:00:00:00:0a'}
         threading.Timer(5, function=self.update_links).start()
 
+        wsgi = kwargs['wsgi']
+        wsgi.register(RestAPIController, { "simple_switch_app": self })
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def switch_features_handler(self, ev):

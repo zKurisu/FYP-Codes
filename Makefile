@@ -2,7 +2,7 @@ RYU_short_path="ryu/short_path.py"
 RYU_simple_monitor="ryu/simple_monitor_13.py"
 RYU_hello="ryu/exercise/hello.py"
 RYU_rest="ryu/exercise/rest_mapper.py"
-RYU_current=${RYU_rest}
+RYU_current=${RYU_short_path}
 
 pre:
 	sudo systemctl stop NetworkManager
