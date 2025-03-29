@@ -74,7 +74,8 @@ class RestAPIController(ControllerBase):
     @add_CROS_header
     def _get_flow_table_current(self, req):
         json_data = json.dumps({
-            "hello": "flow table current"
+            "total_entities": self.simple_switch_app.switch_flow_entities,
+            "type": "flowTable"
         }).encode('utf-8')
         return Response(content_type="application/json", body=json_data)
     
@@ -90,7 +91,8 @@ class RestAPIController(ControllerBase):
     @add_CROS_header
     def _get_port_info(self, req):
         json_data = json.dumps({
-            "hello": "port info"
+            "total_port_infos": self.simple_switch_app.switch_port_info,
+            "type": "portInfo"
         }).encode('utf-8')
         return Response(content_type="application/json", body=json_data)
     
@@ -113,6 +115,8 @@ class SimpleSwitch13(app_manager.RyuApp):
         self.switch_host = {}
         self.switch_map = {}
         self.switch_statistics = {}
+        self.switch_flow_entities = {}
+        self.switch_port_info = {}
         self.count = 0
         self.topology_api_app = self
         self.net = nx.Graph()
@@ -154,22 +158,28 @@ class SimpleSwitch13(app_manager.RyuApp):
     @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
     def _flow_stats_reply_handler(self, ev):
         body = ev.msg.body
-
-        self.logger.info('datapath         '
-                         'in-port  eth-dst           '
-                         'out-port packets  bytes')
-        self.logger.info('---------------- '
-                         '-------- ----------------- '
-                         '-------- -------- --------')
+        
+        flow_entities = []
         for stat in sorted([flow for flow in body if flow.priority == 1],
-                           key=lambda flow: (flow.match['in_port'],
-                                             flow.match['eth_dst'])):
-            self.logger.info('%016x %8x %17s %8x %8d %8d',
-                             ev.msg.datapath.id,
-                             stat.match['in_port'], stat.match['eth_dst'],
-                             stat.instructions[0].actions[0].port,
-                             stat.packet_count, stat.byte_count)
-
+                        key=lambda flow: (
+                            flow.match.get('in_port', 0),  # 使用get方法提供默认值
+                            flow.match.get('eth_dst', '00:00:00:00:00:00')
+                        )):
+            # 获取输出端口，处理可能的缺失情况
+            out_port = 0
+            if stat.instructions and stat.instructions[0].actions:
+                out_port = stat.instructions[0].actions[0].port
+            # 格式化字符串并添加到列表
+            flow_entity =  {
+                    "in_port": stat.match.get('in_port', 0),
+                    "eth_dst": stat.match.get('eth_dst', '00:00:00:00:00:00'),
+                    "out_port": out_port,
+                    "packet_count": stat.packet_count,
+                    "byte_count": stat.byte_count
+            }
+            flow_entities.append(flow_entity)    
+        self.switch_flow_entities[ev.msg.datapath.id] = flow_entities
+    
     @set_ev_cls(ofp_event.EventOFPPortStatsReply, MAIN_DISPATCHER)
     def _port_stats_reply_handler(self, ev):
         body = ev.msg.body
@@ -235,9 +245,16 @@ class SimpleSwitch13(app_manager.RyuApp):
         datapath = ev.msg.datapath
         dpid = format(datapath.id, "d").zfill(16)
         hex_dpid = format(datapath.id, "x")
+        self.switch_port_info.setdefault(hex_dpid, 0)
         
+        self.switch_port_info[hex_dpid] = []
         for p in ev.msg.body:
             port_name = p.name.decode('utf-8')
+            self.switch_port_info[hex_dpid].append({
+                "port_no": p.port_no,
+                "port_name": port_name,
+                "mac": p.hw_addr
+            })
             if re.search(r"eth" , port_name):
                 host_mac = "00:00:00:00:00:" + hex_dpid[len(hex_dpid)-2:]
                 print(f"Host mac is {host_mac}")

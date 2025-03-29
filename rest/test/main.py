@@ -52,16 +52,22 @@ def get_topology():
 def get_current_flow_table():
     total_entities = {
         "10001": [
-            "flow entities 1",
-            "flow entities 2",
-            "flow entities 3",
-            "flow entities 4",
+            {
+                "in_port": 0,
+                "eth_dst": "00:00:00:00:00:01",
+                "out_port": 3,
+                "packet_count": 100,
+                "byte_count": 1000
+            },
         ],
         "10002": [
-            "flow entities 1",
-            "flow entities 2",
-            "flow entities 3",
-            "flow entities 4",
+            {
+                "in_port": 0,
+                "eth_dst": "00:00:00:00:00:01",
+                "out_port": 3,
+                "packet_count": 100,
+                "byte_count": 1000
+            },
         ],
     }
     
@@ -77,16 +83,22 @@ def get_current_flow_table():
 def get_hostory_flow_table():
     total_entities = {
         "10001": [
-            "flow entities 1",
-            "flow entities 2",
-            "flow entities 3",
-            "flow entities 4",
+            {
+                "in_port": 0,
+                "eth_dst": "00:00:00:00:00:01",
+                "out_port": 3,
+                "packet_count": 100,
+                "byte_count": 1000
+            },
         ],
         "10002": [
-            "flow entities 1",
-            "flow entities 2",
-            "flow entities 3",
-            "flow entities 4",
+            {
+                "in_port": 0,
+                "eth_dst": "00:00:00:00:00:01",
+                "out_port": 3,
+                "packet_count": 100,
+                "byte_count": 1000
+            },
         ],
     }
 

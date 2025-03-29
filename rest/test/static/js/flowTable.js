@@ -7,19 +7,33 @@ export function drawFlowTable(total_flow_entities) {
 
   // 创建表格
   const table = document.createElement('table');
+  table.style.width = '100%';
+  table.style.borderCollapse = 'collapse';
   
   // 创建表头
   const thead = document.createElement('thead');
   const headerRow = document.createElement('tr');
   
-  const idHeader = document.createElement('th');
-  idHeader.textContent = 'ID';
+  // 添加详细表头
+  const headers = [
+    'Switch ID', 
+    'In Port', 
+    'Ethernet Destination',
+    'Out Port',
+    'Packet Count',
+    'Byte Count'
+  ];
   
-  const entitiesHeader = document.createElement('th');
-  entitiesHeader.textContent = 'Flow Entities';
+  headers.forEach(headerText => {
+    const th = document.createElement('th');
+    th.textContent = headerText;
+    th.style.border = '1px solid #ddd';
+    th.style.padding = '8px';
+    th.style.textAlign = 'left';
+    th.style.backgroundColor = '#f2f2f2';
+    headerRow.appendChild(th);
+  });
   
-  headerRow.appendChild(idHeader);
-  headerRow.appendChild(entitiesHeader);
   thead.appendChild(headerRow);
   table.appendChild(thead);
   
@@ -27,29 +41,31 @@ export function drawFlowTable(total_flow_entities) {
   const tbody = document.createElement('tbody');
   
   // 遍历数据
-  for (const [id, entities] of Object.entries(total_flow_entities)) {
-    const row = document.createElement('tr');
-    
-    // ID 单元格
-    const idCell = document.createElement('td');
-    idCell.textContent = id;
-    
-    // Entities 单元格
-    const entitiesCell = document.createElement('td');
-    
-    // 创建无序列表显示实体
-    const list = document.createElement('ul');
-    entities.forEach(entity => {
-      const item = document.createElement('li');
-      item.textContent = entity;
-      list.appendChild(item);
+  Object.entries(total_flow_entities).forEach(([dpid, flows]) => {
+    flows.forEach(flow => {
+      const row = document.createElement('tr');
+      
+      // 添加单元格数据
+      const cells = [
+        dpid,
+        flow.in_port || 0,
+        flow.eth_dst || '00:00:00:00:00:00',
+        flow.out_port || 0,
+        flow.packet_count || 0,
+        flow.byte_count || 0
+      ];
+      
+      cells.forEach(cellData => {
+        const td = document.createElement('td');
+        td.textContent = cellData;
+        td.style.border = '1px solid #ddd';
+        td.style.padding = '8px';
+        row.appendChild(td);
+      });
+      
+      tbody.appendChild(row);
     });
-    
-    entitiesCell.appendChild(list);
-    row.appendChild(idCell);
-    row.appendChild(entitiesCell);
-    tbody.appendChild(row);
-  }
+  });
   
   table.appendChild(tbody);
   div.appendChild(table);
