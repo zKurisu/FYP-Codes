@@ -4,17 +4,21 @@
 }
 
 .page-header {
-    background-color: red;
     margin: 10px;
+    border: 2px solid black;
 }
 
 .content-container {
     display: flex;
+    width: 100%;
+    height: auto;
 }
 
 .content-list {
-    background-color: green;
     margin: 10px;
+    width: 30%;
+    height: auto;
+    border: 2px solid black;
 }
 
 .content-list li {
@@ -22,6 +26,8 @@
 }
 
 .content-display-box {
+    width: 70%;
+    height: auto;
     margin: 10px;
-    background-color: yellow;
+    border: 2px solid black;
 }

@@ -3,9 +3,11 @@ export function drawGraph(node_list, edge_list) {
   
   // 创建容器
   const container = document.createElement('div');
-  container.style.width = '800px';
-  container.style.height = '600px';
-  container.style.border = '1px solid #ccc';
+  const fatherContainer = document.getElementsByClassName("content-display-box")[0]
+  const fatherRect = fatherContainer.getBoundingClientRect();
+  container.classList.add("topology-graph")
+  container.style.width = fatherRect.width;
+  container.style.height = "800px";
   
   const title = document.createElement('h1');
   title.textContent = "Graph";

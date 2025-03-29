@@ -10,6 +10,8 @@
 
 .content-container {
     display: flex;
+    width: 100%;
+    height: auto;
 }
 
 .content-list {

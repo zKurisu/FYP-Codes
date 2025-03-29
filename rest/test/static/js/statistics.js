@@ -9,9 +9,6 @@ export function drawStatisticsTable(total_statistics) {
 
   // 创建表格
   const table = document.createElement('table');
-  table.style.width = '100%';
-  table.style.borderCollapse = 'collapse';
-  table.style.marginTop = '20px';
   
   // 创建表头
   const thead = document.createElement('thead');
@@ -26,10 +23,6 @@ export function drawStatisticsTable(total_statistics) {
   headers.forEach(headerText => {
     const th = document.createElement('th');
     th.textContent = headerText;
-    th.style.border = '1px solid #ddd';
-    th.style.padding = '8px';
-    th.style.textAlign = 'left';
-    th.style.backgroundColor = '#f2f2f2';
     headerRow.appendChild(th);
   });
   
@@ -59,8 +52,6 @@ export function drawStatisticsTable(total_statistics) {
       cells.forEach(cellData => {
         const td = document.createElement('td');
         td.textContent = cellData;
-        td.style.border = '1px solid #ddd';
-        td.style.padding = '8px';
         row.appendChild(td);
       });
       

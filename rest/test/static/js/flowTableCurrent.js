@@ -7,8 +7,6 @@ export function drawFlowTableCurrent(total_flow_entities) {
 
   // 创建表格
   const table = document.createElement('table');
-  table.style.width = '100%';
-  table.style.borderCollapse = 'collapse';
   
   // 创建表头
   const thead = document.createElement('thead');
@@ -27,10 +25,6 @@ export function drawFlowTableCurrent(total_flow_entities) {
   headers.forEach(headerText => {
     const th = document.createElement('th');
     th.textContent = headerText;
-    th.style.border = '1px solid #ddd';
-    th.style.padding = '8px';
-    th.style.textAlign = 'left';
-    th.style.backgroundColor = '#f2f2f2';
     headerRow.appendChild(th);
   });
   
@@ -58,8 +52,6 @@ export function drawFlowTableCurrent(total_flow_entities) {
       cells.forEach(cellData => {
         const td = document.createElement('td');
         td.textContent = cellData;
-        td.style.border = '1px solid #ddd';
-        td.style.padding = '8px';
         row.appendChild(td);
       });
       

@@ -7,8 +7,6 @@ export function drawFlowTableHistory(flowData) {
 
   // Create table
   const table = document.createElement('table');
-  table.style.width = '100%';
-  table.style.borderCollapse = 'collapse';
   
   // Create table header
   const thead = document.createElement('thead');
@@ -28,10 +26,6 @@ export function drawFlowTableHistory(flowData) {
   headers.forEach(headerText => {
     const th = document.createElement('th');
     th.textContent = headerText;
-    th.style.border = '1px solid #ddd';
-    th.style.padding = '8px';
-    th.style.textAlign = 'left';
-    th.style.backgroundColor = '#f2f2f2';
     headerRow.appendChild(th);
   });
   
@@ -77,8 +71,6 @@ export function drawFlowTableHistory(flowData) {
       cells.forEach(cellData => {
         const td = document.createElement('td');
         td.textContent = cellData;
-        td.style.border = '1px solid #ddd';
-        td.style.padding = '8px';
         row.appendChild(td);
       });
       
