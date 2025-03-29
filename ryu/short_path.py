@@ -25,6 +25,7 @@ from ryu.lib.packet import arp
 from ryu.topology.api import get_switch
 from ryu.topology import event
 from ryu.app.wsgi import WSGIApplication, ControllerBase, route
+from ryu.lib import hub
 
 import httpx
 import re
@@ -32,6 +33,7 @@ import networkx as nx
 import threading
 import json
 from webob import Response
+from operator import attrgetter
 from mygrpc.python.apcontrol.apcontrol_client import run as rpcClientRun
 from mygrpc.python.apcontrol.apcontrol_client import getAPLinks as rpcGetAPLinks
 
@@ -96,7 +98,8 @@ class RestAPIController(ControllerBase):
     @add_CROS_header
     def _get_statistics(self, req):
         json_data = json.dumps({
-            "hello": "statistics"
+            "total_statistics": self.simple_switch_app.switch_statistics,
+            "type": "statistics"
         }).encode('utf-8')
         return Response(content_type="application/json", body=json_data)
     
@@ -109,6 +112,7 @@ class SimpleSwitch13(app_manager.RyuApp):
         self.mac_to_port = {}
         self.switch_host = {}
         self.switch_map = {}
+        self.switch_statistics = {}
         self.count = 0
         self.topology_api_app = self
         self.net = nx.Graph()
@@ -124,9 +128,65 @@ class SimpleSwitch13(app_manager.RyuApp):
                     '10.0.0.9':'00:00:00:00:00:09',
                     '10.0.0.10':'00:00:00:00:00:0a'}
         threading.Timer(5, function=self.update_links).start()
+        self.monitor_thread = hub.spawn(self._monitor)
+
 
         wsgi = kwargs['wsgi']
         wsgi.register(RestAPIController, { "simple_switch_app": self })
+
+    def _monitor(self):
+        while True:
+            for dp in self.switch_map.values():
+                self._request_stats(dp)
+            hub.sleep(10)
+
+    def _request_stats(self, datapath):
+        self.logger.debug('send stats request: %016x', datapath.id)
+        ofproto = datapath.ofproto
+        parser = datapath.ofproto_parser
+
+        req = parser.OFPFlowStatsRequest(datapath)
+        datapath.send_msg(req)
+
+        req = parser.OFPPortStatsRequest(datapath, 0, ofproto.OFPP_ANY)
+        datapath.send_msg(req)
+
+    @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
+    def _flow_stats_reply_handler(self, ev):
+        body = ev.msg.body
+
+        self.logger.info('datapath         '
+                         'in-port  eth-dst           '
+                         'out-port packets  bytes')
+        self.logger.info('---------------- '
+                         '-------- ----------------- '
+                         '-------- -------- --------')
+        for stat in sorted([flow for flow in body if flow.priority == 1],
+                           key=lambda flow: (flow.match['in_port'],
+                                             flow.match['eth_dst'])):
+            self.logger.info('%016x %8x %17s %8x %8d %8d',
+                             ev.msg.datapath.id,
+                             stat.match['in_port'], stat.match['eth_dst'],
+                             stat.instructions[0].actions[0].port,
+                             stat.packet_count, stat.byte_count)
+
+    @set_ev_cls(ofp_event.EventOFPPortStatsReply, MAIN_DISPATCHER)
+    def _port_stats_reply_handler(self, ev):
+        body = ev.msg.body
+
+        statistics = []
+        for stat in sorted(body, key=attrgetter('port_no')):
+            statistics.append({
+                "port_no": stat.port_no,
+                "rx_packets": stat.rx_packets,
+                "rx_bytes": stat.rx_bytes,
+                "rx_errors": stat.rx_errors,
+                "tx_packets": stat.tx_packets,
+                "tx_bytes": stat.tx_bytes,
+                "tx_errors": stat.tx_errors,
+            })
+        
+        self.switch_statistics[ev.msg.datapath.id] = statistics
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def switch_features_handler(self, ev):

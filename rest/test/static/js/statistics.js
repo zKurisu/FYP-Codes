@@ -40,13 +40,13 @@ export function drawStatisticsTable(total_statistics) {
   const tbody = document.createElement('tbody');
   
   // 遍历统计数据
-  total_statistics.forEach(switchData => {
-    switchData.statistics.forEach(portStats => {
+  Object.entries(total_statistics).forEach(([dpid, portStatsArray]) => {
+    portStatsArray.forEach(portStats => {
       const row = document.createElement('tr');
       
       // 添加单元格数据
       const cells = [
-        switchData.dpid,
+        dpid,
         portStats.port_no,
         portStats.rx_packets,
         portStats.rx_bytes,

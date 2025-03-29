@@ -16,10 +16,12 @@ def main_page(request: Request):
         "index.html",
         {
             "request": request,
-            "ryu_wsgi": "http://192.168.1.109:8080/"
+            "ryu_wsgi": "http://192.168.1.109:8080"
         }
     )
     
+# "ryu_wsgi": "http://192.168.1.109:8080/"
+# "ryu_wsgi": "http://127.0.0.1:8000"
 ######### TMP TEST
 # Node List: ["node1", "node2", "node3", "node4"]
 # Edge List: [
@@ -98,36 +100,30 @@ def get_hostory_flow_table():
 # 
 @app.get("/statistics")
 def get_statistics():
-    total_statistics = [
-        {
-            "dpid": "10001",
-            "statistics": [
-                {
-                    "port_no": 1,
-                    "rx_packets": 10,
-                    "rx_bytes": 11,
-                    "rx_errors": 12,
-                    "tx_packets": 13,
-                    "tx_bytes": 14,
-                    "tx_errors": 15,
-                }
-            ],
-        },
-        {
-            "dpid": "10002",
-            "statistics": [
-                {
-                    "port_no": 1,
-                    "rx_packets": 10,
-                    "rx_bytes": 11,
-                    "rx_errors": 12,
-                    "tx_packets": 13,
-                    "tx_bytes": 14,
-                    "tx_errors": 15,
-                }
-            ],
-        },
-    ]
+    total_statistics = {
+        "10001": [
+            {
+                "port_no": 1,
+                "rx_packets": 10,
+                "rx_bytes": 11,
+                "rx_errors": 12,
+                "tx_packets": 13,
+                "tx_bytes": 14,
+                "tx_errors": 15,
+            }
+        ],
+        "10002": [
+            {
+                "port_no": 1,
+                "rx_packets": 10,
+                "rx_bytes": 11,
+                "rx_errors": 12,
+                "tx_packets": 13,
+                "tx_bytes": 14,
+                "tx_errors": 15,
+            }
+        ],
+    }
     response_content = json.dumps({
         "total_statistics": total_statistics,
         "type": "statistics"
