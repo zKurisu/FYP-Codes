@@ -26,7 +26,8 @@ export function drawGraph(node_list, edge_list) {
   container.appendChild(graphContainer);
 
   // 转换节点数据格式（显示最后3位）
-  const visNodes = node_list.map(node => ({
+  const ap_list = node_list.filter(node => (! node.startsWith("00")))
+  const visNodes = ap_list.map(node => ({
     id: node, // 保持原始ID用于内部引用
     label: node.slice(-3), // 只显示最后3位
     color: {

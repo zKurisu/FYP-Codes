@@ -1,2 +1,3 @@
 prometheus/ori/
 grafana/ori/
+**/__pycache__/

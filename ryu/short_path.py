@@ -310,10 +310,10 @@ class SimpleSwitch13(app_manager.RyuApp):
         self.mac_to_port[dpid][src] = in_port
         # print_mac_to_port(self.mac_to_port)
         # self.logger.info(self.mac_to_port)
-        print(f"src: {src}, dst: {dst}")
+        # print(f"src: {src}, dst: {dst}")
         if self.net.has_node(dst) and self.net.has_node(src):
             print("%s in self.net" % dst)
-            print(self.net.edges(data=True))
+            # print(self.net.edges(data=True))
 
             try:
                 path = nx.shortest_path(self.net, src, dst)
@@ -370,7 +370,7 @@ class SimpleSwitch13(app_manager.RyuApp):
             else:
                 self.net.add_edge(link.src_dpid, link.dst_dpid, port_no=link.port_no)
         # print(f"Nodes: {self.net.nodes}")
-        print(f"Edges: {self.net.edges(data=True)}")
+        # print(f"Edges: {self.net.edges(data=True)}")
     
     @set_ev_cls(event.EventSwitchLeave)
     def _switch_leave_handler(self, ev):
@@ -525,7 +525,7 @@ class SimpleSwitch13(app_manager.RyuApp):
         self.net.remove_edges_from(edges_to_remove)
         response = rpcGetAPLinks()
         links = response.ap_links
-        print(f"Links from Mininet: {links}")
+        # print(f"Links from Mininet: {links}")
         for link in links:
             self.net.add_edge(link.src_dpid, link.dst_dpid, port_no=link.port_no)
 
@@ -537,7 +537,7 @@ class SimpleSwitch13(app_manager.RyuApp):
         parser = mod.datapath.ofproto_parser
 
         # 构建要发送的数据
-        print(f"print_flow_mode: {dpid}\n")
+        # print(f"print_flow_mode: {dpid}\n")
         flow_data = {
             "datapath_id": dpid,
             "priority": mod.priority,
