@@ -1,4 +1,4 @@
-export function drawFlowTableCurrent(total_flow_entities) {
+export function drawFlowTableCurrent(totalFlowEntities) {
   console.debug("Draw flow table begin");
   const div = document.createElement('div');
   const title = document.createElement('h1');
@@ -6,7 +6,7 @@ export function drawFlowTableCurrent(total_flow_entities) {
   div.appendChild(title);
 
   // 遍历每个交换机
-  Object.entries(total_flow_entities).forEach(([dpid, flows]) => {
+  Object.entries(totalFlowEntities).forEach(([dpid, flows]) => {
     // 为每个交换机创建标题
     const dpidTitle = document.createElement('h3');
     dpidTitle.textContent = `Switch ${dpid}`;

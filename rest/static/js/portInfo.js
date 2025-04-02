@@ -1,4 +1,4 @@
-export function drawPortInfoTable(total_port_infos) {
+export function drawPortInfoTable(totalPortInfos) {
   console.debug("Draw port info table begin");
   const div = document.createElement('div');
   const title = document.createElement('h1');
@@ -6,7 +6,7 @@ export function drawPortInfoTable(total_port_infos) {
   div.appendChild(title);
 
   // 遍历每个交换机
-  for (const dpid in total_port_infos) {
+  for (const dpid in totalPortInfos) {
     // 创建交换机容器
     const apBox = document.createElement("div");
     apBox.classList.add("portInfo-ap-box");
@@ -38,7 +38,7 @@ export function drawPortInfoTable(total_port_infos) {
     const tbody = document.createElement("tbody");
     
     // 添加表格内容
-    for (const info of total_port_infos[dpid]) {
+    for (const info of totalPortInfos[dpid]) {
       const row = document.createElement("tr");
       
       const cell1 = document.createElement("td");

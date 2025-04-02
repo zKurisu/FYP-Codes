@@ -1,4 +1,4 @@
-export function drawStatisticsTable(total_statistics) {
+export function drawStatisticsTable(totalStatistics) {
   console.debug("Draw statistics table begin");
   
   // 创建容器
@@ -8,7 +8,7 @@ export function drawStatisticsTable(total_statistics) {
   div.appendChild(title);
 
   // 遍历每个交换机的统计数据
-  Object.entries(total_statistics).forEach(([dpid, portStatsArray]) => {
+  Object.entries(totalStatistics).forEach(([dpid, portStatsArray]) => {
     // 为每个交换机创建标题
     const dpidTitle = document.createElement('h3');
     dpidTitle.textContent = `Switch ${dpid}`;
