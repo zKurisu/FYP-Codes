@@ -115,6 +115,18 @@ def set_mode(conf_func):
         info("Set propagation model...\n")
         mynet.net.setPropagationModel(model="logDistance", exp=5)
         info("Set plotGraph...\n")
-        mynet.net.plotGraph(max_x=150, max_y=100)
+        mynet.net.plotGraph(max_x=200, max_y=200)
+        conf_func(mynet)
+    return wrapper
+
+def set_move_mode(conf_func):
+    def wrapper(mynet):
+        info("Set propagation model...\n")
+        mynet.net.setPropagationModel(model="logDistance", exp=5)
+        info("*** Configuring Propagation Model\n")
+        mynet.net.setMobilityModel(time=0, model='RandomDirection',
+                            max_x=200, max_y=200, seed=20)
+        info("Set plotGraph...\n")
+        mynet.net.plotGraph(max_x=200, max_y=200)
         conf_func(mynet)
     return wrapper
