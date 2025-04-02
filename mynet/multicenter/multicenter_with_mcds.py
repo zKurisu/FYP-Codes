@@ -1,14 +1,10 @@
 #!/usr/bin/env python
-from mn_wifi.net import Mininet_wifi
 from mn_wifi.link import wmediumd, mesh
-from mn_wifi.wmediumdConnector import interference
 from mn_wifi.cli import CLI
 from mininet.log import setLogLevel, info
-from mininet.node import RemoteController
 
-from mynet.mynet import MyNetBase
+from mynet.mynet import MyNetBase, set_mode
 from utils.gen_UDG import generate_connected_udg
-from utils.next_mac import next_mac
 import requests
 import json
 import time
@@ -22,16 +18,14 @@ class MyNet(MyNetBase):
         self.positions, _ = generate_connected_udg(
             n=ap_number,
             signal_range=signal_range,
-            seed=int(time.time())
+            seed=10
+            # seed=int(time.time())
         )
-        self.net = Mininet_wifi(link=wmediumd, wmediumd_mode=interference)
-
 
         self.ap_links = [] # [{ src_dpid: "", dst_dpid: "", port: int}]
         self.center_dpids = []
         self.aps = {}
         self.hosts = {}
-        self.controller = RemoteController("c0", ip="127.0.0.1", port=6654)
     
     def _get_center_dpids(self):
         url = "http://127.0.0.1:8000/find_center"
@@ -105,31 +99,24 @@ class MyNet(MyNetBase):
         return list(self.hosts.values())
 
     def make_ap_links(self):
-            # for k, vs in self.adjacency.items():
+        normal_below_to = {}
         for k, vs in self.adjacency.items():
             new_k = int(k, 16)
-            new_vs = [ int(v, 16) for v in vs ]
             links = []
             if k in self.center_dpids:
                 for v in vs:
                     new_v = int(v, 16)
                     if v in self.center_dpids:
                         link = {"src_dpid": str(new_k), "dst_dpid": str(new_v), "port_no": 2}
+                        links.append(link)
                     else:
-                        link = {"src_dpid": str(new_k), "dst_dpid": str(new_v), "port_no": 3}
-                    links.append(link)
-            else:
-                find_center_flag = False
-                for v in vs:
-                    new_v = int(v, 16)
-                    if v in self.center_dpids and find_center_flag:
-                        continue
-                    if v in self.center_dpids:
-                        find_center_flag = True
-                    link = {"src_dpid": str(new_k), "dst_dpid": str(new_v), "port_no": 3}
-                    links.append(link)
+                        if normal_below_to.get(new_v) == None:
+                            link = {"src_dpid": str(new_k), "dst_dpid": str(new_v), "port_no": 3}
+                            normal_below_to[new_v] = new_k
+                            links.append(link)
             self.ap_links = self.ap_links + links
 
+    @set_mode
     def config(self):
         info("Get init center dpids.......\n")
         self._get_center_dpids()
@@ -147,10 +134,6 @@ class MyNet(MyNetBase):
         info("Add aps.......\n")
         self.add_aps()
         self.net.addController(self.controller)
-
-        info("Set PropagationModel.......\n")
-        self.net.setPropagationModel(model="logDistance", exp=5)
-        self.net.plotGraph(max_x=100, max_y=100)
 
         info("Configure Nodes.......\n")
         self.net.configureNodes()
