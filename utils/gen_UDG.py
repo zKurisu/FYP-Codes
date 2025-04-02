@@ -5,8 +5,8 @@ from collections import deque
 def generate_connected_udg(
     n: int,               # 节点数量 (必须 >=1)
     signal_range: float,  # 信号范围
-    width: float = 100.0,   # 区域宽度 (默认单位正方形)
-    height: float = 100.0,  # 区域高度
+    width: float = 200.0,   # 区域宽度 (默认单位正方形)
+    height: float = 200.0,  # 区域高度
     max_attempts: int = 1000,  # 单个节点的最大生成尝试次数
     seed: int|None = None      # 随机种子 (可选)
 ) -> tuple[dict, dict]:

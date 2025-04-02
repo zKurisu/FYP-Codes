@@ -27,4 +27,3 @@ message APLinks {
 message APLinksResponse {
     repeated APLinks ap_links = 1;
 }
-

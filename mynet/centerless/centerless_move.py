@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import sys
-from mynet.mynet import MyNetBase
+from mynet.mynet import MyNetBase, set_move_mode
 from mininet.node import RemoteController
 from mininet.log import setLogLevel, info
 from mn_wifi.net import Mininet_wifi
@@ -13,8 +13,6 @@ from utils.find_MCDS import get_adjacency
 class MyNet(MyNetBase):
     def __init__(self, ap_number=8): ######## Specify this
         super(MyNet, self).__init__()
-        self.net = Mininet_wifi(link=wmediumd, wmediumd_mode=interference)
-        self.controller = self.net.addController('c1', controller=RemoteController, ip='127.0.0.1', port=6654)
         self.node_num = ap_number
         self.ap_links = []
 
@@ -53,21 +51,16 @@ class MyNet(MyNetBase):
             self.net.addLink(self.aps[dpid], intf=f'{self.aps[dpid].name}-wlan2', cls=mesh, ssid='mesh-centerless', channel=5)
             self.port_to_mesh[f'{self.aps[dpid].name}-wlan2'] = 'mesh-centerless'
 
+    @set_move_mode
     def config(self):
         info("*** Creating nodes\n")
         self.add_nodes_batch()
         
-        info("*** Configuring Propagation Model\n")
-        self.net.setPropagationModel(model="logDistance", exp=5)
-        self.net.setMobilityModel(time=0, model='RandomDirection',
-                            max_x=100, max_y=100, seed=20)
         info("*** Configuring wifi nodes\n")
         self.net.configureNodes()
         info("*** Associating and Creating Links\n")
 
         self.add_links_batch()
-
-        self.net.plotGraph(max_x=100, max_y=100)
 
     def start(self):
         info("*** Starting network\n")

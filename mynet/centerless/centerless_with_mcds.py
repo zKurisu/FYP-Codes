@@ -6,7 +6,7 @@ from mn_wifi.cli import CLI
 from mininet.log import setLogLevel, info
 from mininet.node import RemoteController
 
-from mynet.mynet import MyNetBase
+from mynet.mynet import MyNetBase, set_mode
 from utils.gen_UDG import generate_connected_udg
 from utils.next_mac import next_mac
 import requests
@@ -21,7 +21,8 @@ class MyNet(MyNetBase):
         self.positions, self.adjs = generate_connected_udg(
             n=ap_number,
             signal_range=signal_range,
-            seed=int(time.time())
+            seed=10
+            # seed=int(time.time())
         )
         self.net = Mininet_wifi(link=wmediumd, wmediumd_mode=interference)
 
@@ -69,6 +70,7 @@ class MyNet(MyNetBase):
             links = [{"src_dpid": k, "dst_dpid": v, "port_no": 2} for v in vs ]
             self.ap_links = self.ap_links + links
 
+    @set_mode
     def config(self):
         info(self.adjs)
         self.make_ap_links()
@@ -79,8 +81,6 @@ class MyNet(MyNetBase):
         self.net.addController(self.controller)
 
         info("Set PropagationModel.......\n")
-        self.net.setPropagationModel(model="logDistance", exp=5)
-        self.net.plotGraph(max_x=100, max_y=100)
 
         info("Configure Nodes.......\n")
         self.net.configureNodes()
