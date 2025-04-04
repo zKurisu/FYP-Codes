@@ -14,13 +14,20 @@ def run(dpid, portName):
         return status
 
 def getAPLinks():
-    with grpc.insecure_channel("localhost:10086") as channel:
-        stub = apcontrol_pb2_grpc.APControlStub(channel)
-        request = empty_pb2.Empty()
-        response = stub.GetAPLinks(request)
-        print(f"Ryu send getAPLinks request to Mininet Server")
-
-        return response
+    try:
+        with grpc.insecure_channel("localhost:10086") as channel:
+            stub = apcontrol_pb2_grpc.APControlStub(channel)
+            request = empty_pb2.Empty()
+            response = stub.GetAPLinks(request)
+            print(f"Ryu send getAPLinks request to Mininet Server")
+            return response
+    except grpc.RpcError as e:
+        print(f"Failed to connect to gRPC server: {e}")
+        # 你可以在这里返回一个默认值或重新抛出异常
+        return None  # 或者 raise
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return None  # 或者根据你的需求处理
 
 if __name__ == '__main__':
     run(dpid="100001", portName="ap1-mp2")

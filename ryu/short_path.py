@@ -535,10 +535,11 @@ class SimpleSwitch13(app_manager.RyuApp):
         ]
         self.net.remove_edges_from(edges_to_remove)
         response = rpcGetAPLinks()
-        links = response.ap_links
-        # print(f"Links from Mininet: {links}")
-        for link in links:
-            self.net.add_edge(link.src_dpid, link.dst_dpid, port_no=link.port_no)
+        if response != None:
+            links = response.ap_links
+            # print(f"Links from Mininet: {links}")
+            for link in links:
+                self.net.add_edge(link.src_dpid, link.dst_dpid, port_no=link.port_no)
 
         threading.Timer(5, function=self.update_links).start()
         print("Timer run...")
