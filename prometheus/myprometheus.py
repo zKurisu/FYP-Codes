@@ -25,31 +25,32 @@ class PrometheusClient():
         self.timer.start()
         self.running = True
 
-    def ping_latency_ms(self, dst_host):
+    def ping_latency_ms(self, dst_hosts):
         histogram = Histogram(f"ping_latency_ms_{self.host.name}", "Ping latency measure Histogram", buckets=[20.0, 40.0, 60.0, 80.0, 100.0, 150.0, 200.0])
-        gauge = Gauge(f"ping_latency_ms_g_{self.host.name}", "Ping latency measure Gauge", ["evaluate"])
+        gauge = Gauge(f"ping_latency_ms_g_{self.host.name}", "Ping latency measure Gauge", ["dst_host", "evaluate"])
         while self.running:
-            ping_output = self.host.cmd(f"ping -c 10 {dst_host.IP()}") # 需要确认这里是否会阻塞 -- Yes
-            # print(ping_output)
+            for dst_host in dst_hosts:
+                ping_output = self.host.cmd(f"ping -c 10 {dst_host.IP()}") # 需要确认这里是否会阻塞 -- Yes
+                # print(ping_output)
 
-            latency_times = re.findall(r"time=(\d+\.?\d*) ms", ping_output)
-            for latency in latency_times:
-                histogram.observe(float(latency))
-            
-            result = re.search(r"rtt min/avg/max/mdev = (.*) ms", ping_output)
-            all_metric = result.groups()[0] if result else "0/0/0/0"
-            # print(all_metric)
-            min, avg, max, mdev = all_metric.split("/")
+                latency_times = re.findall(r"time=(\d+\.?\d*) ms", ping_output)
+                for latency in latency_times:
+                    histogram.observe(float(latency))
+                
+                result = re.search(r"rtt min/avg/max/mdev = (.*) ms", ping_output)
+                all_metric = result.groups()[0] if result else "0/0/0/0"
+                # print(all_metric)
+                min, avg, max, mdev = all_metric.split("/")
 
-            gauge.labels(evaluate="min").set(float(min))
-            gauge.labels(evaluate="avg").set(float(avg))
-            gauge.labels(evaluate="max").set(float(max))
-            gauge.labels(evaluate="mdev").set(float(mdev))
+                gauge.labels(dst_host=dst_host.IP(), evaluate="min").set(float(min))
+                gauge.labels(dst_host=dst_host.IP(), evaluate="avg").set(float(avg))
+                gauge.labels(dst_host=dst_host.IP(), evaluate="max").set(float(max))
+                gauge.labels(dst_host=dst_host.IP(), evaluate="mdev").set(float(mdev))
 
-    def ping_target(self, dst_host):
+    def ping_target(self, dst_hosts):
         print(f"Ping Test, run Prometheus client on {self.port}...")
         start_http_server(self.port)
-        self.ping_latency_ms(dst_host)
+        self.ping_latency_ms(dst_hosts)
     
     def iperf_bd(self, dst_hosts):
         gauge = Gauge(f"iperf_bd_g_{self.host.name}", f"Iperf test for {self.host.name} as client", ["dst_host"])
