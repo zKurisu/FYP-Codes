@@ -172,6 +172,24 @@ class SimpleSwitch13(app_manager.RyuApp):
     @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
     def _flow_stats_reply_handler(self, ev):
         body = ev.msg.body
+        datapath = ev.msg.datapath
+        ofproto = datapath.ofproto
+        parser = datapath.ofproto_parser
+
+        # 检测 table-miss 是否存在
+        table_miss_exists = False
+        for stat in body:
+            if stat.priority == 0 and not stat.match:  # 无匹配条件且优先级为0
+                table_miss_exists = True
+                break
+
+        # 如果缺失，则重新添加
+        if not table_miss_exists:
+            match = parser.OFPMatch()
+            actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,
+                                            ofproto.OFPCML_NO_BUFFER)]
+            self.add_flow(datapath, 0, match, actions)
+            print("Add Default flow entities\n")
         
         flow_entities = []
         for stat in sorted([flow for flow in body if flow.priority == 1],
@@ -213,7 +231,7 @@ class SimpleSwitch13(app_manager.RyuApp):
         self.switch_statistics[ev.msg.datapath.id] = statistics
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
-    def switch_features_handler(self, ev):
+    def _switch_features_handler(self, ev):
         datapath = ev.msg.datapath
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
@@ -234,6 +252,7 @@ class SimpleSwitch13(app_manager.RyuApp):
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,
                                           ofproto.OFPCML_NO_BUFFER)]
         self.add_flow(datapath, 0, match, actions)
+        print("Add Default flow entities\n")
 
 
     def add_flow(self, datapath, priority, match, actions, buffer_id=None):
@@ -244,10 +263,10 @@ class SimpleSwitch13(app_manager.RyuApp):
                                              actions)]
         if buffer_id:
             mod = parser.OFPFlowMod(datapath=datapath, buffer_id=buffer_id,
-                                    priority=priority, match=match,
+                                    priority=priority, match=match, idle_timeout=10,
                                     instructions=inst)
         else:
-            mod = parser.OFPFlowMod(datapath=datapath, priority=priority,
+            mod = parser.OFPFlowMod(datapath=datapath, priority=priority, idle_timeout=10,
                                     match=match, instructions=inst)
         
         hex_dpid = format(datapath.id, "x")
@@ -255,7 +274,7 @@ class SimpleSwitch13(app_manager.RyuApp):
         datapath.send_msg(mod)
 
     @set_ev_cls(ofp_event.EventOFPPortDescStatsReply, MAIN_DISPATCHER)
-    def port_desc_stats_reply_handler(self, ev):
+    def _port_desc_stats_reply_handler(self, ev):
         datapath = ev.msg.datapath
         dpid = format(datapath.id, "d").zfill(16)
         hex_dpid = format(datapath.id, "x")
@@ -296,17 +315,16 @@ class SimpleSwitch13(app_manager.RyuApp):
         eth = pkt.get_protocols(ethernet.ethernet)[0]
 
         out_port = None
-        if eth.ethertype == ether_types.ETH_TYPE_LLDP:
-            # ignore lldp packet
-            return
-        
+
         pkt_arp = pkt.get_protocol(arp.arp)
         if eth.ethertype == 2054:
             print("arp")
             self.handle_arp(datapath, in_port, eth, pkt_arp)
             return
 
-
+        if eth.ethertype == ether_types.ETH_TYPE_LLDP:
+            # ignore lldp packet
+            return
         dst = eth.dst
         src = eth.src
 
@@ -321,7 +339,7 @@ class SimpleSwitch13(app_manager.RyuApp):
         self.mac_to_port[dpid][src] = in_port
         # print_mac_to_port(self.mac_to_port)
         # self.logger.info(self.mac_to_port)
-        # print(f"src: {src}, dst: {dst}")
+        print(f"src: {src}, dst: {dst}")
         if self.net.has_node(dst) and self.net.has_node(src):
             print("%s in self.net" % dst)
             # print(self.net.edges(data=True))
@@ -361,7 +379,7 @@ class SimpleSwitch13(app_manager.RyuApp):
             datapath.send_msg(out)
 
     @set_ev_cls(event.EventSwitchEnter)
-    def get_topology_data(self, ev):
+    def _switch_enter_handler(self, ev):
         print("............Switch Enter")
         switch_list = get_switch(self.topology_api_app, None)
         switches = [format(switch.dp.id, "d").zfill(16) for switch in switch_list]
@@ -448,6 +466,7 @@ class SimpleSwitch13(app_manager.RyuApp):
                 target_host = self.switch_host[target_dpid]
 
                 if target_host:
+                    print("Delete flow????")
                     for switch in self.switch_map.values():
                         match = parser.OFPMatch(eth_dst=target_host)
                         self._delete_flows(switch, match)
@@ -481,7 +500,7 @@ class SimpleSwitch13(app_manager.RyuApp):
         # 发送消息
         self.print_flow_mod(flow_mod, hex_dpid)
         datapath.send_msg(flow_mod)
-        self.logger.info(f"Deleted flows with match: {match}")
+        print(f"Deleted flows with match: {match}")
 	
     def send_packet(self, dp, port, pkt):
         ofproto = dp.ofproto
