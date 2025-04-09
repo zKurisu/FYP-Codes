@@ -23,7 +23,7 @@ You may get `ssh error`, which can be ignored. But make sure all scripts describ
 git clone https://github.com/intrig-unicamp/mininet-wifi
 cd mininet-wifi
 sudo util/install.sh -WlnfvP6
-sudo make install
+sudo pip3 install . --break-system-packages
 sudo apt-get openvswitch-switch openvswitch-testcontroller openvswitch-common
 sudo mn --wifi
 ```
