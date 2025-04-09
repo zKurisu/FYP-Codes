@@ -10,13 +10,13 @@ Using virtual machine template supplied by P4Tutorial:
 ```sh
 mkdir p4-dev
 git clone https://github.com/p4lang/tutorials.git
-cd tutorials/vm-ubuntu-24.04
 git checkout 03501da
+cd tutorials/vm-ubuntu-24.04
 vagrant up dev --provider=virtualbox
 ```
 It will take some time (maybe one hour...) to download packages and compile to executable files. Pay attention to the specific version, latest version may meet some problems.
 
-You may get `ssh error`, which can be ignored. Then login to GUI, you could reboot or `startx`.
+You may get `ssh error`, which can be ignored. But make sure all scripts described in `Vagrantfile` have done, including `root-dev-bootstrap.sh`, `root-common-bootstrap.sh`, `user-dev-bootstrap.sh`, `user-common-bootstrap.sh` (some scripts should handle `pip install xxx --break-system-packages`). Then login to GUI, you could reboot or `startx`.
 
 ## Mininet-wifi
 ```sh
@@ -24,6 +24,8 @@ git clone https://github.com/intrig-unicamp/mininet-wifi
 cd mininet-wifi
 sudo util/install.sh -WlnfvP6
 sudo make install
+sudo apt-get openvswitch-switch openvswitch-testcontroller openvswitch-common
+sudo mn --wifi
 ```
 
 ## Ryu
@@ -38,6 +40,7 @@ python3.8 -m venv ryu
 source ryu/bin/activate
 cd FYP-Codes
 pip install -r requirements-ryu.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+cp -r mygrpc ~/ryu/lib/python3.8/site-packages/
 ryu-manager --version
 ```
 
