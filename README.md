@@ -18,6 +18,14 @@ It will take some time (maybe one hour...) to download packages and compile to e
 
 You may get `ssh error`, which can be ignored. Then login to GUI, you could reboot or `startx`.
 
+## Mininet-wifi
+```sh
+git clone https://github.com/intrig-unicamp/mininet-wifi
+cd mininet-wifi
+sudo util/install.sh -WlnfvP6
+sudo make install
+```
+
 ## Ryu
 Using Python venv to separate:
 ```sh
@@ -28,39 +36,23 @@ sudo apt update
 sudo apt install python3.8 python3.8-venv
 python3.8 -m venv ryu
 source ryu/bin/activate
-pip install --upgrade pip
-pip install ryu
-pip uninstall eventlet
-pip install eventlet==0.30.0
+cd FYP-Codes
+pip install -r requirements-ryu.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ryu-manager --version
 ```
 
 Run example application to verify Ryu:
-```
-git clone https://github.com/faucetsdn/ryu.git
-ryu-manager ./ryu/ryu/app/simple_switch.py
-```
-
-## Mininet-wifi
 ```sh
-git clone https://github.com/intrig-unicamp/mininet-wifi
-cd mininet-wifi
-sudo util/install.sh -WlnfvP6
-sudo make install
+cd
+git clone https://github.com/faucetsdn/ryu.git Ryu
+ryu-manager ./Ryu/ryu/app/simple_switch.py
 ```
 
 # Start Project
 Install requirements for other components (except Ryu venv):
 ```sh
 cd FYP-Codes
-pip install -r requirements-main.txt
-```
-
-For Ryu venv:
-```sh
-source ryu/bin/activate
-cd FYP-Codes
-pip install -r requirements-ryu.txt
+sudo pip install -r requirements-main.txt -i https://pypi.tuna.tsinghua.edu.cn/simple --break-system-packages
 ```
 
 Open several terminal to run separately.
@@ -84,7 +76,3 @@ For mininet-wifi:
 ```sh
 make run
 ```
-
-
-
-
