@@ -21,7 +21,7 @@ def main_page(request: Request):
         "index.html",
         {
             "request": request,
-            "ryu_wsgi": "http://192.168.43.119:8080"
+            "ryu_wsgi": "http://192.168.1.20:8080"
         }
     )
 

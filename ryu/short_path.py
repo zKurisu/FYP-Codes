@@ -255,7 +255,7 @@ class SimpleSwitch13(app_manager.RyuApp):
         print("Add Default flow entities\n")
 
 
-    def add_flow(self, datapath, priority, match, actions, buffer_id=None):
+    def add_flow(self, datapath, priority, match, actions, buffer_id=None, idle_timeout=65535):
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
 
@@ -263,10 +263,10 @@ class SimpleSwitch13(app_manager.RyuApp):
                                              actions)]
         if buffer_id:
             mod = parser.OFPFlowMod(datapath=datapath, buffer_id=buffer_id,
-                                    priority=priority, match=match, idle_timeout=10,
+                                    priority=priority, match=match, idle_timeout=idle_timeout,
                                     instructions=inst)
         else:
-            mod = parser.OFPFlowMod(datapath=datapath, priority=priority, idle_timeout=10,
+            mod = parser.OFPFlowMod(datapath=datapath, priority=priority, idle_timeout=idle_timeout,
                                     match=match, instructions=inst)
         
         hex_dpid = format(datapath.id, "x")
@@ -359,10 +359,10 @@ class SimpleSwitch13(app_manager.RyuApp):
                     next_port = self.net[now_switch][next_switch]['port_no']
                     back_port = self.net[now_switch][back_switch]['port_no']
                     actions = [parser.OFPActionOutput(next_port)]
-                    self.add_flow(datapath=self.switch_map[now_switch], match=next_match, actions=actions, priority=1)
+                    self.add_flow(datapath=self.switch_map[now_switch], match=next_match, actions=actions, priority=1, idle_timeout=10)
                     
                     actions = [parser.OFPActionOutput(back_port)]
-                    self.add_flow(datapath=self.switch_map[now_switch], match=back_match, actions=actions, priority=1)
+                    self.add_flow(datapath=self.switch_map[now_switch], match=back_match, actions=actions, priority=1, idle_timeout=10)
                     print("now switch:%s" % now_switch)
             except nx.NetworkXNoPath:
                 print(f"No path between {src} and {dst}")
@@ -467,12 +467,12 @@ class SimpleSwitch13(app_manager.RyuApp):
 
                 if target_host:
                     print("Delete flow????")
-                    for switch in self.switch_map.values():
-                        match = parser.OFPMatch(eth_dst=target_host)
-                        self._delete_flows(switch, match)
+                    # for switch in self.switch_map.values():
+                    #     match = parser.OFPMatch(eth_dst=target_host)
+                    #     self._delete_flows(switch, match)
 
-                        match = parser.OFPMatch(eth_src=target_host)
-                        self._delete_flows(switch, match)
+                    #     match = parser.OFPMatch(eth_src=target_host)
+                    #     self._delete_flows(switch, match)
             else:
                 dpid = format(datapath.id, "x")
                 self.logger.info(f"{portInfo.name} is up.")

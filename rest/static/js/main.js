@@ -5,7 +5,7 @@ import { drawMacToPortTable } from "./macToPortTable.js"
 import { drawPortInfoTable } from "./portInfo.js"
 import { drawStatisticsTable } from "./statistics.js"
 
-const headerList = {"Prometheus": "http://127.0.0.1:5000"};
+const headerList = {"Prometheus": "http://127.0.0.1:9090"};
 const contentList = {
   "Topology": "/topology",
   "Flow table history": "/flowTable/history",

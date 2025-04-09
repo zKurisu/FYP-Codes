@@ -1,17 +1,10 @@
 #!/usr/bin/env python
-from mn_wifi.net import Mininet_wifi
 from mn_wifi.link import wmediumd, mesh
-from mn_wifi.wmediumdConnector import interference
 from mn_wifi.cli import CLI
 from mininet.log import setLogLevel, info
-from mininet.node import RemoteController
 
 from mynet.mynet import MyNetBase, set_mode
 from utils.gen_UDG import generate_connected_udg
-from utils.next_mac import next_mac
-import requests
-import json
-import time
 
 class MyNet(MyNetBase):
     def __init__(self, ap_number=10, signal_range=31.484254489723796):
@@ -24,12 +17,10 @@ class MyNet(MyNetBase):
             seed=10
             # seed=int(time.time())
         )
-        self.net = Mininet_wifi(link=wmediumd, wmediumd_mode=interference)
 
         self.ap_links = [] # [{ src_dpid: "", dst_dpid: "", port: int}]
         self.aps = {}
         self.hosts = {}
-        self.controller = RemoteController("c0", ip="127.0.0.1", port=6654)
     
     def add_aps(self):
         for dpid in self.positions.keys():

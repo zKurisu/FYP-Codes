@@ -1,13 +1,8 @@
 #!/usr/bin/env python
-import sys
 from mynet.mynet import MyNetBase, set_move_mode
-from mininet.node import RemoteController
 from mininet.log import setLogLevel, info
-from mn_wifi.net import Mininet_wifi
 from mn_wifi.cli import CLI
 from mn_wifi.link import wmediumd, mesh, adhoc
-from mn_wifi.wmediumdConnector import interference
-from utils.next_mac import next_mac
 from utils.find_MCDS import get_adjacency
 
 class MyNet(MyNetBase):
@@ -37,8 +32,8 @@ class MyNet(MyNetBase):
         """ A Node is [AP + Host] """
         opt_params = {}
         #opt_params['protocols']='OpenFlow13'
-        opt_params['min_v'] = 0.5
-        opt_params['max_v'] = 0.9
+        opt_params['min_v'] = 0.1
+        opt_params['max_v'] = 0.5
 
         for _ in range(1, self.node_num+1):
             dpid, _ = self.add_ap(wlans=3, **opt_params)
@@ -53,6 +48,7 @@ class MyNet(MyNetBase):
 
     @set_move_mode
     def config(self):
+        info("--- Change")
         info("*** Creating nodes\n")
         self.add_nodes_batch()
         

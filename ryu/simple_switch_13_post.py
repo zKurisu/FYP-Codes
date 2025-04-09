@@ -246,13 +246,14 @@ class SimpleSwitch13(app_manager.RyuApp):
                 target_hosts = self.switch_hosts[target_dpid].values()
 
                 if len(target_hosts) > 0:
-                    for hw_addr in target_hosts:
-                        for switch in self.switches:
-                            match = parser.OFPMatch(eth_dst=hw_addr)
-                            self._delete_flows(switch, match)
+                    print("Delete flows????")
+                    # for hw_addr in target_hosts:
+                    #     for switch in self.switches:
+                    #         match = parser.OFPMatch(eth_dst=hw_addr)
+                    #         self._delete_flows(switch, match)
 
-                            match = parser.OFPMatch(eth_src=hw_addr)
-                            self._delete_flows(switch, match)
+                    #         match = parser.OFPMatch(eth_src=hw_addr)
+                    #         self._delete_flows(switch, match)
 
                     self.mac_to_port = {}
             else:

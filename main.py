@@ -1,10 +1,9 @@
 import threading
 from mygrpc.python.apcontrol.apcontrol_server import APCrpcserver
 from prometheus.myprometheus import PrometheusClient
-from utils.send_apInfo import send_apInfo
-# from mynet.centerless.centerless_with_mcds import MyNet
+from mynet.centerless.centerless_with_mcds import MyNet
 # from mynet.centerless.centerless_move import MyNet
-from mynet.multicenter.multicenter_with_mcds import MyNet
+# from mynet.multicenter.multicenter_with_mcds import MyNet
 # from mynet.multicenter.static_multicenter import MyNet
 
 def run(mynet):
@@ -22,8 +21,8 @@ def run(mynet):
     ###### Prometheus
     # p1 = PrometheusClient(hosts[0], 11111)
     
-    # pthread = threading.Thread(target=p1.ping_target, name="pthread_ping", args=(hosts[1],))
-    #pthread = threading.Thread(target=p1.iperf_targets, name="pthread_iperf", args=(hosts[1:],))
+    # pthread = threading.Thread(target=p1.ping_target, name="pthread_ping", args=(hosts[1:],))
+    # pthread = threading.Thread(target=p1.iperf_targets, name="pthread_iperf", args=(hosts[1:],))
     # pthread.start()
 
     ###### CLI
@@ -37,5 +36,5 @@ def run(mynet):
     mynet.stop()
 
 if __name__ == "__main__":
-    mynet = MyNet(ap_number=20)
+    mynet = MyNet(ap_number=5)
     run(mynet)

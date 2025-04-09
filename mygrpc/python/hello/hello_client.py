@@ -1,6 +1,7 @@
 import grpc
-import hello_pb2
-import hello_pb2_grpc
+
+import mygrpc.python.hello.hello_pb2 as hello_pb2
+import mygrpc.python.hello.hello_pb2_grpc as hello_pb2_grpc
 
 def run():
     with grpc.insecure_channel("localhost:10086") as channel:

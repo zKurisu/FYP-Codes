@@ -1,7 +1,8 @@
 from concurrent import futures
 import grpc
-import hello_pb2_grpc
-import hello_pb2
+
+import mygrpc.python.hello.hello_pb2_grpc as hello_pb2_grpc
+import mygrpc.python.hello.hello_pb2 as hello_pb2
 
 class Greeter(hello_pb2_grpc.GreeterServicer):
     def SayHello(self, request, context):
