@@ -1,12 +1,8 @@
-fastapi[all]==0.115.8
+fastapi==0.115.8
+uvicorn==0.34.0
 grpcio==1.70.0
 httpx==0.28.1
 matplotlib==3.6.3
 networkx==3.4.2
 prometheus_client==0.21.1
 pydantic==2.10.6
-protobuf==5.29.3
-types-protobuf==4.24
-scapy==2.5.0
-terkin==0.14.0
-WebOb==1.8.9

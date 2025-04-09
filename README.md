@@ -51,10 +51,21 @@ git clone https://github.com/faucetsdn/ryu.git Ryu
 ryu-manager ./Ryu/ryu/app/simple_switch.py
 ```
 
+## Prometheus
+Check the OS version and pull the latest bin file:
+```sh
+cd FYP-Codes/prometheus
+wget https://github.com/prometheus/prometheus/releases/download/v3.2.1/prometheus-3.2.1.linux-386.tar.gz
+tar xzf prometheus-3.2.1.linux-386.tar.gz
+mv prometheus-3.2.1.linux-386.tar.gz ori
+```
+
+
 # Start Project
 Install requirements for other components (except Ryu venv):
 ```sh
 cd FYP-Codes
+pip install -r requirements-main.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 sudo pip install -r requirements-main.txt -i https://pypi.tuna.tsinghua.edu.cn/simple --break-system-packages
 ```
 
