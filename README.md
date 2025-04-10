@@ -69,6 +69,13 @@ pip install -r requirements-main.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 sudo pip install -r requirements-main.txt -i https://pypi.tuna.tsinghua.edu.cn/simple --break-system-packages
 ```
 
+You must stop `NetworkManager` first, it will try to control WLAN interface created by `mininet-wifi`.
+```sh
+
+sudo systemctl stop NetworkManager # For this time
+sudo systemctl disable --now NetworkManager # For all time
+```
+
 Open several terminal to run separately.
 
 For frontend page:
@@ -90,3 +97,25 @@ For mininet-wifi:
 ```sh
 make run
 ```
+
+# Common error
+## GUI, XDG\_RUNTIME\_DIR not set
+```sh
+echo "export XDG_RUNTIME_DIR=/run/user/$(id -u)" >> ~/.bashrc
+```
+
+Edit Makefile, change to:
+```makefile
+run:
+    sudo -E PYTHONPATH=. python main.py
+```
+May fix this error.
+
+
+
+
+
+
+
+
+
