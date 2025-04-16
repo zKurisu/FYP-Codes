@@ -24,7 +24,7 @@ git clone https://github.com/intrig-unicamp/mininet-wifi
 cd mininet-wifi
 sudo util/install.sh -WlnfvP6
 sudo pip3 install . --break-system-packages
-sudo apt-get openvswitch-switch openvswitch-testcontroller openvswitch-common
+sudo apt-get install openvswitch-switch openvswitch-testcontroller openvswitch-common
 sudo mn --wifi
 ```
 
@@ -57,9 +57,22 @@ Check the OS version and pull the latest bin file:
 cd FYP-Codes/prometheus
 wget https://github.com/prometheus/prometheus/releases/download/v3.2.1/prometheus-3.2.1.linux-386.tar.gz
 tar xzf prometheus-3.2.1.linux-386.tar.gz
-mv prometheus-3.2.1.linux-386.tar.gz ori
+mv prometheus-3.2.1.linux-386 ori
+touch ori/test.yml
 ```
 
+The content of `test.yml` is:
+```
+global:
+  scrape_interval: 10s  # 每 15 秒拉取一次数据
+
+scrape_configs:
+  - job_name: 'my_python_app'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['192.168.1.20:11111']
+```
+- IP address for `targets` could be different
 
 # Start Project
 Install requirements for other components (except Ryu venv):
@@ -110,12 +123,3 @@ run:
     sudo -E PYTHONPATH=. python main.py
 ```
 May fix this error.
-
-
-
-
-
-
-
-
-
